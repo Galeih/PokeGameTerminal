@@ -1,0 +1,98 @@
+# Fichiers binaires et dossiers générés par le build
+bin/
+obj/
+out/
+
+# Dossiers spécifiques à Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Packages NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Logs et fichiers de diagnostic
+*.log
+*.tlog
+*.cache
+*.ide.*
+
+# Fichiers de configuration utilisateur
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Système de gestion de version
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration de JetBrains Rider et Visual Studio Code
+.idea/
+.vscode/
+*.sln.iml
+
+# Fichiers d'assemblage et symboles de débogage
+*.dll
+*.pdb
+*.exe
+
+# Répertoire de déploiement ou publication
+publish/
+dist/
+Release/
+Debug/
+
+# Fichiers de données générés par des tests ou outils de migration
+*.coverage
+*.coveragexml
+*.lcov
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# Fichiers et données sensibles
+secrets.json
+.env
+.env.local
+.env.*.local
+
+# Fichiers de dépendances et de restauration
+project.lock.json
+project.fragment.lock.json
+
+# Fichiers générés par des outils tiers
+*.generated.cs
+
+# Répertoires et fichiers spécifiques à Windows
+*.db
+
+# Répertoires spécifiques au système ou au build
+_ReSharper.*
+*~backup*
+
+# Documentation
+*.md.cache
+
+# Dépendances locales ou fichiers spécifiques au développeur
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers spécifiques à Spectre.Console (si applicable)
+spectre.console.debug.json
+
+# Bibliothèques natives
+*.so
+*.dylib
+*.dll
+*.lib
