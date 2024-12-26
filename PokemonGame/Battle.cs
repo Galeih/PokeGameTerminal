@@ -47,16 +47,28 @@ public class Battle
 
     private void AfficherBarreDeVie(Pokemon p1, Pokemon p2)
     {
-        Console.WriteLine("╔═══════════════════════════════════════╗");
-        Console.WriteLine($"║ {p1.Name} PV: [{GetBarreDeVie(p1.Health, p1.Level * 12)}]");
-        Console.WriteLine($"║ {p2.Name} PV: [{GetBarreDeVie(p2.Health, p2.Level * 12)}]");
-        Console.WriteLine("╚═══════════════════════════════════════╝");
+        Console.WriteLine("\n╔════════════════════════════════════════════════════════════════════╗");
+        Console.WriteLine($"║ {p1.Name,-15} | PV: {p1.Health}/{p1.Level * 12} | {GetBarreDeVie(p1.Health, p1.Level * 12)} ║");
+        Console.WriteLine("╠════════════════════════════════════════════════════════════════════╣");
+        Console.WriteLine($"║ {p2.Name,-15} | PV: {p2.Health}/{p2.Level * 12} | {GetBarreDeVie(p2.Health, p2.Level * 12)} ║");
+        Console.WriteLine("╚════════════════════════════════════════════════════════════════════╝");
     }
 
     private string GetBarreDeVie(int current, int max)
     {
-        const int totalBarres = 20;
+        const int totalBarres = 20; // Nombre de segments dans la barre de vie
         int barresRemplies = (int)((current / (double)max) * totalBarres);
-        return new string('█', barresRemplies).PadRight(totalBarres, ' ');
+        int barresVides = totalBarres - barresRemplies;
+
+        // Couleur de la barre de vie
+        string color = current > max * 0.5 ? "green" : current > max * 0.2 ? "yellow" : "red";
+
+        // Barre remplie et vide
+        string filledBar = new string('█', barresRemplies);
+        string emptyBar = new string('░', barresVides);
+
+        // Retourne la barre de vie colorée
+        return $"[bold {color}]{filledBar}[/]{emptyBar}";
     }
+
 }
