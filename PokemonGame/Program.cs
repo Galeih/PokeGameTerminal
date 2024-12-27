@@ -1,6 +1,5 @@
-﻿using Spectre.Console;
-
-namespace PokemonGame;
+﻿using PokemonGame;
+using Spectre.Console;
 
 class Program
 {
@@ -17,12 +16,17 @@ class Program
         Player player = new(playerName);
         int battleCount = 0;
 
-        // Sélection du Pokémon de départ
-        AfficherCadre("CHOISISSEZ VOTRE POKÉMON DE DÉPART", ConsoleColor.Magenta);
+        // Dialogues pour la sélection des starters
+        AfficherDialogueSansEcart($"Prof. Chen : Bienvenue, [bold yellow]{playerName}[/] !");
+        AfficherDialogueSansEcart("Prof. Chen : Aujourd'hui, tu vas commencer ton aventure Pokémon !");
+        AfficherDialogueSansEcart("Prof. Chen : Je vais te confier un Pokémon qui deviendra ton partenaire.");
+        AfficherDialogueSansEcart("Prof. Chen : Fais ton choix parmi les quatre Pokémon disponibles !");
 
+        // Sélection du Pokémon de départ
+        AnsiConsole.MarkupLine("");
         string starterChoice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("[bold cyan]Choisissez un Pokémon de départ :[/]")
+                .Title("[bold cyan]Quel Pokémon veux-tu choisir ?[/]")
                 .AddChoices(
                     "Bulbizarre 🍃 (Type : Plante/Poison)",
                     "Salamèche 🔥 (Type : Feu)",
@@ -30,6 +34,7 @@ class Program
                     "Pikachu ⚡ (Type : Électrique)")
         );
 
+        // Créer le starter choisi
         Pokemon starter = starterChoice switch
         {
             "Bulbizarre 🍃 (Type : Plante/Poison)" => new Pokemon("Bulbizarre", 5, 45, 49, "Plante", "Poison", 45),
@@ -40,56 +45,26 @@ class Program
         };
 
         // Définir les PV maximaux dès la création
-        starter.Health = starter.Level * 12; // Ajuste la formule si besoin
+        starter.Health = starter.Level * 12;
 
-        // Ajout des attaques initiales
-        switch (starter.Name)
-        {
-            case "Bulbizarre":
-                starter.LearnMove(new AttackLogic("Fouet Lianes", "Plante", "Physique", 45, 100));
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Poudre Dodo", "Plante", "Soutien", 0, 75, (attacker, target) =>
-                {
-                    Console.WriteLine($"{target.Name} s'endort !");
-                    target.Status = "Endormi";
-                }));
-                break;
+        // Ajout des attaques spécifiques
+        AjouterAttaquesInitiales(starter);
+        AnsiConsole.MarkupLine(""); // Écart après les attaques
 
-            case "Salamèche":
-                starter.LearnMove(new AttackLogic("Griffe", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Flammèche", "Feu", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Grondement", "Normal", "Soutien", 0, 100));
-                break;
-
-            case "Carapuce":
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Pistolet à O", "Eau", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Protection", "Normal", "Soutien", 0, 100));
-                break;
-
-            case "Pikachu":
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Éclair", "Électrique", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
-                {
-                    Console.WriteLine($"{target.Name} est paralysé !");
-                    target.Status = "Paralysé";
-                }));
-                break;
-        }
-
-        // Confirmation du choix
-        AnsiConsole.MarkupLine($"[bold green]Félicitations, {starter.Name} a rejoint votre équipe ![/]");
+        // Confirmation avec dialogue
+        AfficherDialogueSansEcart($"Prof. Chen : Très bon choix, [bold yellow]{playerName}[/] !");
+        AfficherDialogueSansEcart($"Prof. Chen : [bold green]{starter.Name}[/] sera ton partenaire pour cette aventure.");
+        AfficherDialogueSansEcart("Prof. Chen : Prends soin de lui et explore le monde des Pokémon !");
+        AnsiConsole.MarkupLine("");
+        AnsiConsole.MarkupLine($"🎉 [bold green]{starter.Name}[/] rejoint votre équipe avec tous ses PV complets !");
+        AnsiConsole.MarkupLine("");
         player.AddPokemon(starter);
 
         // Boucle principale : menu du jeu
         while (true)
         {
             // Menu principal
+            AnsiConsole.MarkupLine("");
             string action = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold green]MENU PRINCIPAL[/]")
@@ -126,46 +101,76 @@ class Program
                     Boutique(player);
                     break;
                 case "Quitter":
-                    AfficherCadre("Merci d'avoir joué ! À bientôt !", ConsoleColor.Red);
+                    AfficherCadre("Merci d'avoir joué à Pokémon Rouge ! À bientôt !", ConsoleColor.Red);
+                    Console.ReadKey();
                     return;
             }
         }
     }
 
-    /// <summary>
-    /// Affiche une bannière stylée "Pokémon Rouge".
-    /// </summary>
     static void AfficherBanniere()
     {
-        Panel banner = new Panel(@"
-[bold yellow]BIENVENUE À KANTO !
-LE MONDE DES POKÉMON ![/]")
-            .Header("[bold red]Pokémon Rouge[/]", Justify.Center)
-            .Border(BoxBorder.Double)
-            .Expand()
-            .Padding(2, 1);
+        Console.Clear();
 
-        AnsiConsole.Write(banner);
-    }
-
-    /// <summary>
-    /// Affiche un cadre stylisé avec un message, possibilité de changer la couleur.
-    /// </summary>
-    static void AfficherCadre(string message, ConsoleColor color = ConsoleColor.Yellow)
-    {
+        // Titre principal avec effet de style
         AnsiConsole.Write(
-            new Panel($"[bold {color.ToString().ToLower()}]{message}[/]")
-                .Border(BoxBorder.Rounded)
-                .Padding(1, 1)
-                .Expand()
-        );
+            new FigletText("POKÉMON ROUGE")
+                .Centered()
+                .Color(Color.Red));
+
+        AnsiConsole.MarkupLine("");
+
+        // Création d'une table dynamique avec options interactives
+        var menuTable = new Table()
+            .Centered()
+            .AddColumn(new TableColumn("[bold yellow]BIENVENUE À KANTO ![/]").Centered());
+
+        menuTable.AddRow(new Markup("[bold cyan]> Nouvelle Partie[/]"));
+        menuTable.AddRow(new Markup("[bold cyan]> Charger Partie[/]"));
+        menuTable.AddRow(new Markup("[bold cyan]> Options[/]"));
+        menuTable.AddRow(new Markup("[bold cyan]> Quitter[/]"));
+        menuTable.Border(TableBorder.DoubleEdge);
+
+        // Afficher la table
+        AnsiConsole.Write(menuTable);
+
+        AnsiConsole.MarkupLine("");
+        AnsiConsole.MarkupLine("[bold green]Utilisez les flèches pour naviguer et appuyez sur Entrée pour sélectionner une option.[/]");
+        AnsiConsole.MarkupLine("");
+
+        // Menu interactif basé sur les choix dans la table
+        var choix = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold green]Menu Principal[/]")
+                .AddChoices("Nouvelle Partie", "Charger Partie", "Options", "Quitter"));
+
+        // Gérer les choix de l'utilisateur
+        switch (choix)
+        {
+            case "Nouvelle Partie":
+                AnsiConsole.MarkupLine("[bold cyan]Lancement d'une nouvelle aventure ![/]");
+                break;
+
+            case "Charger Partie":
+                AnsiConsole.MarkupLine("[bold cyan]Chargement d'une partie existante ![/]");
+                break;
+
+            case "Options":
+                AnsiConsole.MarkupLine("[bold cyan]Ouverture des options ![/]");
+                break;
+
+            case "Quitter":
+                AnsiConsole.MarkupLine("[bold cyan]Merci d'avoir joué à POKÉMON ROUGE ![/]");
+                Environment.Exit(0);
+                break;
+        }
+
+        Console.Clear();
     }
 
-    /// <summary>
-    /// Simule un chargement stylisé.
-    /// </summary>
     static void SimulerChargement(string message)
     {
+        AnsiConsole.MarkupLine("");
         AnsiConsole.Status()
             .Start(message, ctx =>
             {
@@ -174,53 +179,93 @@ LE MONDE DES POKÉMON ![/]")
                     Thread.Sleep(50);
                 }
             });
+        AnsiConsole.MarkupLine("");
     }
 
-    /// <summary>
-    /// Calcule l'XP gagnée en fonction du niveau du Pokémon vaincu avec une variation de ±5 %.
-    /// </summary>
-    /// <param name="level">Niveau du Pokémon vaincu.</param>
-    /// <returns>XP gagnée.</returns>
-    public static int CalculerExperienceGagnee(int level)
+    static void AfficherCadre(string message, ConsoleColor color = ConsoleColor.Yellow)
     {
-        // Base XP = Niveau du Pokémon vaincu × 7
-        double baseXp = level * 7;
-
-        // Variation aléatoire entre -5 % et +5 %
-        Random random = new();
-        double variationPourcentage = random.NextDouble() * 10 - 5; // Entre -5 et +5
-        double xpAvecVariation = baseXp * (1 + variationPourcentage / 100);
-
-        // Retourne l'XP arrondie à l'entier le plus proche
-        return (int)Math.Round(xpAvecVariation);
+        AnsiConsole.MarkupLine("");
+        AnsiConsole.Write(
+            new Panel($"[bold {color.ToString().ToLower()}]{message}[/]")
+                .Border(BoxBorder.Rounded)
+                .Padding(1, 1)
+                .Expand()
+        );
+        AnsiConsole.MarkupLine("");
     }
 
+    static void AfficherDialogueSansEcart(string message)
+    {
+        AnsiConsole.Write(
+            new Panel($"[bold white]{message}[/]")
+                .Header("[bold yellow]Dialogue[/]")
+                .Border(BoxBorder.Rounded)
+                .Padding(1, 1)
+                .Expand()
+        );
+        Console.ReadKey(true); // Pause pour simuler un dialogue interactif
+    }
 
-    /// <summary>
-    /// Gère un combat contre un Pokémon sauvage.
-    /// </summary>
+    static void AjouterAttaquesInitiales(Pokemon starter)
+    {
+        switch (starter.Name)
+        {
+            case "Bulbizarre":
+                starter.LearnMove(new AttackLogic("Fouet Lianes", "Plante", "Physique", 45, 100));
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Poudre Dodo", "Plante", "Soutien", 0, 75, (attacker, target) =>
+                {
+                    target.Status = "Endormi";
+                    Console.WriteLine($"{target.Name} s'endort !");
+                }));
+                break;
+
+            case "Salamèche":
+                starter.LearnMove(new AttackLogic("Griffe", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Flammèche", "Feu", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Grondement", "Normal", "Soutien", 0, 100));
+                break;
+
+            case "Carapuce":
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Pistolet à O", "Eau", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Protection", "Normal", "Soutien", 0, 100));
+                break;
+
+            case "Pikachu":
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Éclair", "Électrique", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
+                {
+                    target.Status = "Paralysé";
+                    Console.WriteLine($"{target.Name} est paralysé !");
+                }));
+                break;
+        }
+    }
+
     static void CombatSauvage(ref int battleCount, Player player)
     {
-        // Sélection de la zone
+        AnsiConsole.MarkupLine("");
         string zoneName = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("[bold green]Choisissez une zone pour explorer :[/]")
                 .AddChoices("Forêt", "Montagne", "Lac", "Grotte", "Plaine", "Zone industrielle", "Zone rare"));
 
-        // Génération d'un Pokémon sauvage
         Pokemon wildPokemon = WildPokemonData.GenerateWildPokemon(player.ZoneLevel, zoneName);
 
-        // Ajout d'attaques au Pokémon sauvage
         wildPokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
         wildPokemon.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));
 
         AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît dans la zone {zoneName} !", ConsoleColor.Blue);
 
-        // Lancer le combat
         Battle battle = new(player, wildPokemon);
         battle.StartBattle();
 
-        // Si le Pokémon sauvage est K.O.
         if (wildPokemon.IsFainted())
         {
             bool capture = AnsiConsole.Confirm("[bold yellow]Le Pokémon ennemi est K.O. Voulez-vous le capturer ?[/]");
@@ -233,9 +278,6 @@ LE MONDE DES POKÉMON ![/]")
         battleCount++;
     }
 
-    /// <summary>
-    /// Permet de voir l'équipe du joueur ou afficher le résumé détaillé d'un Pokémon.
-    /// </summary>
     static void VoirEquipeOuResume(Player player)
     {
         // Affichage de l'équipe
@@ -259,74 +301,16 @@ LE MONDE DES POKÉMON ![/]")
         }
     }
 
-    /// <summary>
-    /// Affiche l'équipe du joueur avec un tableau stylisé.
-    /// </summary>
-    static void AfficherEquipe(Player player)
-    {
-        Table table = new Table().Centered();
-        table.AddColumn("[bold]Nom[/]");
-        table.AddColumn("[bold]Type[/]");
-        table.AddColumn("[bold]PV[/]");
-
-        foreach (Pokemon p in player.Pokemons)
-        {
-            string typeText = p.Type2 == null
-                ? p.Type1
-                : $"{p.Type1} / {p.Type2}";
-            table.AddRow(p.Name, typeText, $"{p.Health}/{p.Level * 12}");
-        }
-
-        AnsiConsole.Write(new Panel(table)
-            .Header("VOTRE ÉQUIPE", Justify.Center)
-            .Border(BoxBorder.Rounded)
-            .Expand());
-    }
-
-    /// <summary>
-    /// Affiche un résumé détaillé d'un Pokémon (stats, XP manquante, etc.).
-    /// </summary>
-    static void AfficherResumePokemon(Pokemon p)
-    {
-        // Calcul de l'XP requise pour le niveau suivant (ex: level * 5 => total, p.Experience => actuel)
-        int expNeeded = p.Level * 5;
-        int missingExp = expNeeded - p.Experience;
-        if (missingExp < 0) missingExp = 0;
-
-        Table detailTable = new Table();
-        detailTable.AddColumn("Caractéristique");
-        detailTable.AddColumn("Valeur");
-
-        detailTable.AddRow("Nom", p.Name);
-        detailTable.AddRow("Niveau", p.Level.ToString());
-        detailTable.AddRow("Type(s)", p.Type2 == null ? p.Type1 : $"{p.Type1} / {p.Type2}");
-        detailTable.AddRow("PV", $"{p.Health}/{p.Level * 12}");
-        detailTable.AddRow("Attaque", p.Attack.ToString());
-        detailTable.AddRow("Défense", p.Defense.ToString());
-        detailTable.AddRow("Vitesse", p.Speed.ToString());
-        detailTable.AddRow("Exp Actuelle", p.Experience.ToString());
-        detailTable.AddRow("Exp Requise pour prochain niveau", missingExp.ToString());
-
-        AnsiConsole.Write(new Panel(detailTable)
-            .Header($"Résumé de {p.Name}", Justify.Center)
-            .Border(BoxBorder.Double)
-            .Expand());
-    }
-
-    /// <summary>
-    /// Soigne tous les Pokémon du joueur.
-    /// </summary>
     static void SoignerEquipe(Player player)
     {
         foreach (Pokemon pokemon in player.Pokemons)
+        {
             pokemon.Heal();
+        }
 
         AfficherCadre("Tous vos Pokémon sont maintenant en pleine forme !", ConsoleColor.Green);
     }
 
-    /// <summary>
-    /// Affiche les statistiques du jeu (combats, captures, etc.).
-    /// </summary>
     static void AfficherStatistiques(Player player, int battleCount)
     {
         Table table = new Table().Centered();
@@ -343,9 +327,6 @@ LE MONDE DES POKÉMON ![/]")
             .Expand());
     }
 
-    /// <summary>
-    /// Gère la boutique : achats de potions et Pokéballs.
-    /// </summary>
     static void Boutique(Player player)
     {
         string choice = AnsiConsole.Prompt(
@@ -369,5 +350,55 @@ LE MONDE DES POKÉMON ![/]")
                 break;
         }
     }
-}
 
+    static void AfficherEquipe(Player player)
+    {
+        Table table = new Table().Centered();
+        table.AddColumn("[bold]Pokémon[/]");
+        table.AddColumn("[bold]Niveau[/]");
+        table.AddColumn("[bold]PV[/]");
+        table.AddColumn("[bold]Attaque[/]");
+        table.AddColumn("[bold]Type 1[/]");
+        table.AddColumn("[bold]Type 2[/]");
+
+        foreach (Pokemon pokemon in player.Pokemons)
+        {
+            table.AddRow(
+                pokemon.Name,
+                pokemon.Level.ToString(),
+                $"{pokemon.Health}/{pokemon.Level * 12}",
+                pokemon.Attack.ToString(),
+                pokemon.Type1,
+                pokemon.Type2 ?? "-"
+            );
+        }
+
+        AnsiConsole.Write(new Panel(table)
+            .Header("ÉQUIPE POKÉMON", Justify.Center)
+            .Border(BoxBorder.Rounded)
+            .Expand());
+    }
+
+    static void AfficherResumePokemon(Pokemon pokemon)
+    {
+        Table table = new Table().Centered();
+        table.AddColumn("[bold]Statistique[/]");
+        table.AddColumn("[bold]Valeur[/]");
+
+        table.AddRow("Nom", pokemon.Name);
+        table.AddRow("Niveau", pokemon.Level.ToString());
+        table.AddRow("PV", $"{pokemon.Health}/{pokemon.Level * 12}");
+        table.AddRow("Attaque", pokemon.Attack.ToString());
+        table.AddRow("Défense", pokemon.Defense.ToString());
+        table.AddRow("Attaque Spéciale", pokemon.SpecialAttack.ToString());
+        table.AddRow("Défense Spéciale", pokemon.SpecialDefense.ToString());
+        table.AddRow("Vitesse", pokemon.Speed.ToString());
+        table.AddRow("Type 1", pokemon.Type1);
+        table.AddRow("Type 2", pokemon.Type2 ?? "-");
+
+        AnsiConsole.Write(new Panel(table)
+            .Header($"Résumé de {pokemon.Name}", Justify.Center)
+            .Border(BoxBorder.Rounded)
+            .Expand());
+    }
+}
