@@ -11,6 +11,42 @@ public class Battle
         Player2 = player2;
     }
 
+    public void StartBattle()
+    {
+        Pokemon attacker = Player1.Pokemons[0];
+        Pokemon defender = Player2.Pokemons[0];
+
+        while (!attacker.IsFainted() && !defender.IsFainted())
+        {
+            Console.WriteLine($"{attacker.Name} (PV : {attacker.Health}) VS {defender.Name} (PV : {defender.Health})");
+            Console.WriteLine("Choisissez une attaque :");
+            for (int i = 0; i < attacker.Moves.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {attacker.Moves[i].Name}");
+            }
+
+            int choice = int.Parse(Console.ReadLine() ?? "1") - 1;
+            if (choice >= 0 && choice < attacker.Moves.Count)
+            {
+                attacker.Moves[choice].Use(attacker, defender);
+            }
+
+            // Inverse les rôles pour continuer le combat
+            Pokemon temp = attacker;
+            attacker = defender;
+            defender = temp;
+        }
+
+        if (attacker.IsFainted())
+        {
+            Console.WriteLine($"{attacker.Name} est K.O. !");
+        }
+        else if (defender.IsFainted())
+        {
+            Console.WriteLine($"{defender.Name} est K.O. !");
+        }
+    }
+
     public void StartWithHealthBar()
     {
         Pokemon p1 = Player1.Pokemons[0];

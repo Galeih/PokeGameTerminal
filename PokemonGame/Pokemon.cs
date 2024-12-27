@@ -1,18 +1,40 @@
 ﻿namespace PokemonGame;
 
-public class Pokemon(string name, int level, int health, int attack, string type1, string type2 = null)
+public class Pokemon(string name, int level, int health, int attack, string type1, string? type2 = null)
 {
+    public string Name { get; set; } = name;
+
+    public int Level { get; set; } = level;
+
+    public int Health { get; set; } = health;
+
+    public int Attack { get; set; } = attack;
+
+    public int Defense { get; set; } = level * 2;
+
+    public int SpecialAttack { get; set; } = level * 3; // Exemples
+
+    public int SpecialDefense { get; set; } = level * 2; // Exemples
+
+    public int Speed { get; set; } = level * 3; // Exemples
+
+    public string Type1 { get; set; } = type1;
+
+    public string? Type2 { get; set; } = type2;
+
+    public int Experience { get; set; } = 0;
+
+    public List<Attack> Moves { get; set; } = new();
+
     private static readonly Random RandomInstance = new();
 
-    public string Name { get; set; } = name;
-    public int Level { get; set; } = level;
-    public int Health { get; set; } = health;
-    public int Attack { get; set; } = attack;
-    public int Defense { get; set; } = level * 2; // Défense initiale proportionnelle au niveau
-    public int Speed { get; set; } = level * 3;   // Vitesse initiale proportionnelle au niveau
-    public int Experience { get; set; } = 0;      // XP actuel
-    public string Type1 { get; set; } = type1;
-    public string? Type2 { get; set; } = type2;
+    public void AddMove(Attack attack)
+    {
+        if (Moves.Count < 4)
+            Moves.Add(attack);
+        else
+            Console.WriteLine("Impossible d'apprendre plus de 4 attaques !");
+    }
 
     public void AttackPokemon(Pokemon target)
     {

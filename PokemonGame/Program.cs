@@ -48,7 +48,7 @@ class Program
         while (true)
         {
             // Menu principal
-            var action = AnsiConsole.Prompt(
+            string action = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold green]MENU PRINCIPAL[/]")
                     .AddChoices(
@@ -95,7 +95,7 @@ class Program
     /// </summary>
     static void AfficherBanniere()
     {
-        var banner = new Panel(@"
+        Panel banner = new Panel(@"
 [bold yellow]BIENVENUE À KANTO !
 LE MONDE DES POKÉMON ![/]")
             .Header("[bold red]Pokémon Rouge[/]", Justify.Center)
@@ -159,7 +159,7 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void CombatSauvage(ref int battleCount, Player player)
     {
-        var wildPokemon = Pokemon.GenerateWildPokemon(player.ZoneLevel);
+        Pokemon wildPokemon = Pokemon.GenerateWildPokemon(player.ZoneLevel);
         AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît !", ConsoleColor.Blue);
 
         SimulerChargement("Le combat commence");
@@ -193,13 +193,13 @@ LE MONDE DES POKÉMON ![/]")
         if (AnsiConsole.Confirm("Voulez-vous consulter le résumé d'un Pokémon ?"))
         {
             // Sélection du Pokémon à voir
-            var pkmnChoice = AnsiConsole.Prompt(
+            string pkmnChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold blue]Choisissez un Pokémon pour voir son résumé :[/]")
                     .AddChoices(player.Pokemons.Select(pk => pk.Name))
             );
 
-            var chosenPokemon = player.Pokemons.FirstOrDefault(pk => pk.Name == pkmnChoice);
+            Pokemon? chosenPokemon = player.Pokemons.FirstOrDefault(pk => pk.Name == pkmnChoice);
             if (chosenPokemon != null)
             {
                 AfficherResumePokemon(chosenPokemon);
@@ -212,7 +212,7 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void AfficherEquipe(Player player)
     {
-        var table = new Table().Centered();
+        Table table = new Table().Centered();
         table.AddColumn("[bold]Nom[/]");
         table.AddColumn("[bold]Type[/]");
         table.AddColumn("[bold]PV[/]");
@@ -241,7 +241,7 @@ LE MONDE DES POKÉMON ![/]")
         int missingExp = expNeeded - p.Experience;
         if (missingExp < 0) missingExp = 0;
 
-        var detailTable = new Table();
+        Table detailTable = new Table();
         detailTable.AddColumn("Caractéristique");
         detailTable.AddColumn("Valeur");
 
@@ -266,7 +266,7 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void SoignerEquipe(Player player)
     {
-        foreach (var pokemon in player.Pokemons)
+        foreach (Pokemon pokemon in player.Pokemons)
             pokemon.Heal();
 
         AfficherCadre("Tous vos Pokémon sont maintenant en pleine forme !", ConsoleColor.Green);
@@ -277,7 +277,7 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void AfficherStatistiques(Player player, int battleCount)
     {
-        var table = new Table().Centered();
+        Table table = new Table().Centered();
         table.AddColumn("[bold]Statistique[/]");
         table.AddColumn("[bold]Valeur[/]");
 
@@ -296,7 +296,7 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void Boutique(Player player)
     {
-        var choice = AnsiConsole.Prompt(
+        string choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("[bold magenta]BIENVENUE À LA BOUTIQUE[/]")
                 .AddChoices("Potion (20 pièces)", "Super Potion (50 pièces)", "Pokéball (10 pièces)", "Quitter la boutique"));
