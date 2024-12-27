@@ -1,6 +1,6 @@
 ﻿namespace PokemonGame;
 
-public class Attack(string name, string type, string category, int power, int accuracy, Action<Pokemon, Pokemon>? effect = null)
+public class AttackLogic(string name, string type, string category, int power, int accuracy, Action<Pokemon, Pokemon>? effect = null)
 {
     public string Name { get; set; } = name;
 

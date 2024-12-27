@@ -24,11 +24,11 @@ public class Pokemon(string name, int level, int health, int attack, string type
 
     public int Experience { get; set; } = 0;
 
-    public List<Attack> Moves { get; set; } = new();
+    public List<AttackLogic> Moves { get; set; } = new();
 
     private static readonly Random RandomInstance = new();
 
-    public void AddMove(Attack attack)
+    public void AddMove(AttackLogic attack)
     {
         if (Moves.Count < 4)
             Moves.Add(attack);
@@ -188,11 +188,63 @@ public class Pokemon(string name, int level, int health, int attack, string type
     {
         List<Pokemon> wildPokemons = new()
         {
-            new("Rattata", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal"),
-            new("Pidgey", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Vol", "Normal"),
-            new("Zubat", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Poison", "Vol"),
+            new("Abra", 6 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Psy"),
+            new("Aerodactyl", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Roche", "Vol"),
+            new("Bellsprout", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Plante", "Poison"),
+            new("Bulbasaur", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Plante", "Poison"),
+            new("Caterpie", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Insecte"),
+            new("Charmander", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Feu"),
+            new("Clefairy", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Fée"),
+            new("Cubone", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Sol"),
+            new("Diglett", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Sol"),
+            new("Ditto", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal"),
+            new("Doduo", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal", "Vol"),
+            new("Dratini", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Dragon"),
+            new("Drowzee", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Psy"),
+            new("Eevee", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Normal"),
             new("Ekans", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Poison"),
-            new("Geodude", 3 + zoneLevel, 40 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Roche", "Sol")
+            new("Exeggcute", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Plante", "Psy"),
+            new("Farfetch'd", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal", "Vol"),
+            new("Gastly", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Spectre", "Poison"),
+            new("Geodude", 3 + zoneLevel, 40 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Roche", "Sol"),
+            new("Goldeen", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Eau"),
+            new("Grimer", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Poison"),
+            new("Growlithe", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Feu"),
+            new("Horsea", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Eau"),
+            new("Jigglypuff", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal", "Fée"),
+            new("Kabuto", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Roche", "Eau"),
+            new("Koffing", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Poison"),
+            new("Krabby", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Eau"),
+            new("Lickitung", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Normal"),
+            new("Machop", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Combat"),
+            new("Magikarp", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Eau"),
+            new("Magnemite", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Électrique", "Acier"),
+            new("Mankey", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Combat"),
+            new("Meowth", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal"),
+            new("Nidoran♀", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Poison"),
+            new("Nidoran♂", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Poison"),
+            new("Oddish", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Plante", "Poison"),
+            new("Omanyte", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Roche", "Eau"),
+            new("Paras", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Insecte", "Plante"),
+            new("Pidgey", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Vol", "Normal"),
+            new("Poliwag", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Eau"),
+            new("Ponyta", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Feu"),
+            new("Psyduck", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Eau"),
+            new("Rattata", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal"),
+            new("Rhyhorn", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Sol", "Roche"),
+            new("Sandshrew", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Sol"),
+            new("Seel", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Eau"),
+            new("Shellder", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Eau"),
+            new("Snorlax", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Normal"),
+            new("Spearow", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Normal", "Vol"),
+            new("Squirtle", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Eau"),
+            new("Staryu", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Eau"),
+            new("Tentacool", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Eau", "Poison"),
+            new("Venonat", 3 + zoneLevel, 25 + (zoneLevel * 5), 5 + (zoneLevel * 2), "Insecte", "Poison"),
+            new("Voltorb", 5 + zoneLevel, 35 + (zoneLevel * 5), 7 + (zoneLevel * 2), "Électrique"),
+            new("Vulpix", 4 + zoneLevel, 30 + (zoneLevel * 5), 6 + (zoneLevel * 2), "Feu"),
+            new("Weedle", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Insecte", "Poison"),
+            new("Zubat", 2 + zoneLevel, 20 + (zoneLevel * 5), 4 + (zoneLevel * 2), "Poison", "Vol"),
         };
 
         return wildPokemons[RandomInstance.Next(wildPokemons.Count)];

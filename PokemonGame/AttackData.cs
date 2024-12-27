@@ -1,23 +1,28 @@
-﻿namespace PokemonGame;
+﻿using PokemonGame.Attack.Physical;
+using PokemonGame.Attack.Special;
+using PokemonGame.Attack.Support;
+
+namespace PokemonGame;
 
 public static class AttackData
 {
-    public static List<Attack> GetAllAttacks()
+    public static List<AttackLogic> GetAllAttacks()
     {
-        return new List<Attack>
-        {
-            new("Lance-Flammes", "Feu", "Spéciale", 90, 100),
-            new("Charge", "Normal", "Physique", 40, 100),
-            new("Rugissement", "Normal", "Soutien", 0, 100, (attacker, target) =>
-            {
-                target.Attack -= 2;
-                Console.WriteLine($"{target.Name} voit son attaque baisser !");
-            }),
-            new("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
-            {
-                Console.WriteLine($"{target.Name} est paralysé !");
-                target.Speed /= 2;
-            })
-        };
+        var allAttacks = new List<AttackLogic>();
+
+        // Ajout des attaques physiques
+        allAttacks.AddRange(Attack.Physical.Normal.GetAttacks());
+        // Ajouter les autres types comme Feu, Eau...
+        // allAttacks.AddRange(Feu.GetAttacks());
+
+        // Ajout des attaques spéciales
+        // allAttacks.AddRange(SpecialNormal.GetAttacks());
+        // Ajouter les autres types...
+
+        // Ajout des attaques de soutien
+        // allAttacks.AddRange(SupportNormal.GetAttacks());
+        // Ajouter les autres types...
+
+        return allAttacks;
     }
 }
