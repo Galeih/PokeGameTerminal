@@ -2,81 +2,66 @@
 
 public class Battle
 {
-    private Player Player1;
-    private Player Player2;
+    private Player Player;
+    private Pokemon WildPokemon;
 
-    public Battle(Player player1, Player player2)
+    public Battle(Player player, Pokemon wildPokemon)
     {
-        Player1 = player1;
-        Player2 = player2;
+        Player = player;
+        WildPokemon = wildPokemon;
     }
 
     public void StartBattle()
     {
-        Pokemon attacker = Player1.Pokemons[0];
-        Pokemon defender = Player2.Pokemons[0];
-
-        while (!attacker.IsFainted() && !defender.IsFainted())
+        Pokemon playerPokemon = Player.Pokemons.FirstOrDefault(p => !p.IsFainted());
+        if (playerPokemon == null)
         {
-            Console.WriteLine($"{attacker.Name} (PV : {attacker.Health}) VS {defender.Name} (PV : {defender.Health})");
+            Console.WriteLine("Tous vos Pokémon sont K.O. Vous ne pouvez pas combattre !");
+            return;
+        }
+
+        Console.WriteLine($"Un {WildPokemon.Name} sauvage apparaît !");
+        while (!playerPokemon.IsFainted() && !WildPokemon.IsFainted())
+        {
+            AfficherBarreDeVie(playerPokemon, WildPokemon);
+
+            // Tour du joueur
             Console.WriteLine("Choisissez une attaque :");
-            for (int i = 0; i < attacker.Moves.Count; i++)
+            for (int i = 0; i < playerPokemon.Moves.Count; i++)
             {
-                Console.WriteLine($"{i + 1}. {attacker.Moves[i].Name}");
+                Console.WriteLine($"{i + 1}. {playerPokemon.Moves[i].Name} ({playerPokemon.Moves[i].Category})");
             }
 
             int choice = int.Parse(Console.ReadLine() ?? "1") - 1;
-            if (choice >= 0 && choice < attacker.Moves.Count)
+            if (choice >= 0 && choice < playerPokemon.Moves.Count)
             {
-                attacker.Moves[choice].Use(attacker, defender);
+                playerPokemon.UseMove(playerPokemon.Moves[choice].Name, WildPokemon);
             }
 
-            // Inverse les rôles pour continuer le combat
-            Pokemon temp = attacker;
-            attacker = defender;
-            defender = temp;
-        }
-
-        if (attacker.IsFainted())
-        {
-            Console.WriteLine($"{attacker.Name} est K.O. !");
-        }
-        else if (defender.IsFainted())
-        {
-            Console.WriteLine($"{defender.Name} est K.O. !");
-        }
-    }
-
-    public void StartWithHealthBar()
-    {
-        Pokemon p1 = Player1.Pokemons[0];
-        Pokemon p2 = Player2.Pokemons[0];
-
-        Console.WriteLine("\nLe combat commence !");
-        while (!p1.IsFainted() && !p2.IsFainted())
-        {
-            AfficherBarreDeVie(p1, p2);
-
-            p1.AttackPokemon(p2);
-            if (p2.IsFainted())
+            if (WildPokemon.IsFainted())
             {
-                Console.WriteLine($"{p2.Name} est K.O !");
-
-                // Calcul de l'XP gagnée
-                int expGagnee = ExperienceCalculator.CalculerExperienceGagnee(p2.Level);
-                Console.WriteLine($"{p1.Name} gagne {expGagnee} points d'expérience !");
-
-                // Ajout de l'XP au Pokémon victorieux
-                p1.GainExperience(expGagnee);
-
+                Console.WriteLine($"{WildPokemon.Name} est K.O. !");
                 break;
             }
 
-            p2.AttackPokemon(p1);
-            if (p1.IsFainted())
+            // Tour du Pokémon sauvage
+            Random random = new();
+            int randomMoveIndex = random.Next(WildPokemon.Moves.Count);
+            WildPokemon.UseMove(WildPokemon.Moves[randomMoveIndex].Name, playerPokemon);
+
+            if (playerPokemon.IsFainted())
             {
-                Console.WriteLine($"{p1.Name} est K.O !");
-                break;
+                Console.WriteLine($"{playerPokemon.Name} est K.O. !");
+                if (Player.Pokemons.Any(p => !p.IsFainted()))
+                {
+                    Console.WriteLine("Choisissez un autre Pokémon !");
+                    playerPokemon = Player.Pokemons.First(p => !p.IsFainted());
+                }
+                else
+                {
+                    Console.WriteLine("Tous vos Pokémon sont K.O. !");
+                    break;
+                }
             }
         }
     }
@@ -92,19 +77,15 @@ public class Battle
 
     private string GetBarreDeVie(int current, int max)
     {
-        const int totalBarres = 20; // Nombre de segments dans la barre de vie
+        const int totalBarres = 20;
         int barresRemplies = (int)((current / (double)max) * totalBarres);
         int barresVides = totalBarres - barresRemplies;
 
-        // Couleur de la barre de vie
         string color = current > max * 0.5 ? "green" : current > max * 0.2 ? "yellow" : "red";
 
-        // Barre remplie et vide
         string filledBar = new string('█', barresRemplies);
         string emptyBar = new string('░', barresVides);
 
-        // Retourne la barre de vie colorée
         return $"[bold {color}]{filledBar}[/]{emptyBar}";
     }
-
 }

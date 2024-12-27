@@ -76,8 +76,8 @@ public class Player(string name)
         Console.WriteLine($"Vous utilisez une Pokéball. Il vous en reste {PokeBalls}.");
 
         Random random = new();
-        int chance = random.Next(1, 101);
-        int captureRate = Math.Max(10, (100 * wildPokemon.Health) / (wildPokemon.Level * 10));
+        int chance = random.Next(40, 101);
+        int captureRate = Math.Max(10, (100 * wildPokemon.Health) / (wildPokemon.Level * 15));
 
         if (chance <= captureRate)
         {

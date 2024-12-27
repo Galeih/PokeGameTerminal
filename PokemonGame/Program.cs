@@ -35,6 +35,16 @@ class Program
             "Carapuce 🌊 (Type : Eau)" => new Pokemon("Carapuce", 5, 40, 8, "Eau"),
             _ => throw new InvalidOperationException()
         };
+
+        starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+        starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
+        starter.LearnMove(new AttackLogic("Queue de Fer", "Acier", "Physique", 70, 75));
+        starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
+        {
+            Console.WriteLine($"{target.Name} est paralysé !");
+            target.Speed /= 2;
+        }));
+
         starter.Heal(); // Pour s'assurer qu'il a Level * 12 PV soit full HP
 
         AnsiConsole.MarkupLine($"[bold green]🎉 {starter.Name} a rejoint votre équipe ![/]");
@@ -137,8 +147,8 @@ LE MONDE DES POKÉMON ![/]")
     /// <returns>XP gagnée.</returns>
     public static int CalculerExperienceGagnee(int level)
     {
-        // Base XP = Niveau du Pokémon vaincu × 10
-        double baseXp = level * 10;
+        // Base XP = Niveau du Pokémon vaincu × 7
+        double baseXp = level * 7;
 
         // Variation aléatoire entre -5 % et +5 %
         Random random = new();
@@ -155,16 +165,26 @@ LE MONDE DES POKÉMON ![/]")
     /// </summary>
     static void CombatSauvage(ref int battleCount, Player player)
     {
-        Pokemon wildPokemon = Pokemon.GenerateWildPokemon(player.ZoneLevel);
-        AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît !", ConsoleColor.Blue);
+        // Sélection de la zone
+        string zoneName = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold green]Choisissez une zone pour explorer :[/]")
+                .AddChoices("Forêt", "Montagne", "Lac", "Grotte", "Plaine", "Zone industrielle", "Zone rare"));
 
-        SimulerChargement("Le combat commence");
+        // Génération d'un Pokémon sauvage
+        Pokemon wildPokemon = WildPokemonData.GenerateWildPokemon(player.ZoneLevel, zoneName);
 
-        // Utilise la classe Battle pour lancer le combat
-        Battle battle = new(player, new Player("Sauvage") { Pokemons = { wildPokemon } });
-        battle.StartWithHealthBar();
+        // Ajout d'attaques au Pokémon sauvage
+        wildPokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+        wildPokemon.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));
 
-        // Si le Pokémon adverse est K.O. => possibilité de capture
+        AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît dans la zone {zoneName} !", ConsoleColor.Blue);
+
+        // Lancer le combat
+        Battle battle = new(player, wildPokemon);
+        battle.StartBattle();
+
+        // Si le Pokémon sauvage est K.O.
         if (wildPokemon.IsFainted())
         {
             bool capture = AnsiConsole.Confirm("[bold yellow]Le Pokémon ennemi est K.O. Voulez-vous le capturer ?[/]");

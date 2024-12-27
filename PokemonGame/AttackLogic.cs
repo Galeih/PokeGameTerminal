@@ -19,33 +19,41 @@ public class AttackLogic(string name, string type, string category, int power, i
         Random random = new();
         if (random.Next(100) < Accuracy)
         {
+            // Calcul des multiplicateurs pour les deux types
+            double multiplier1 = Pokemon.GetTypeMultiplier(Type, target.Type1);
+            double multiplier2 = target.Type2 != null ? Pokemon.GetTypeMultiplier(Type, target.Type2) : 1.0;
+            double totalMultiplier = multiplier1 * multiplier2;
+
+            // Déterminer l'efficacité
+            string effectiveness = Pokemon.GetEffectivenessDescription(totalMultiplier);
+
+            // Calcul des dégâts
+            int damage;
             if (Category == "Physique")
             {
-                int damage = (int)((attacker.Attack - target.Defense / 2.0) * GetTypeMultiplier(attacker.Type1, target.Type1));
-                target.Health -= Math.Max(1, damage);
-                Console.WriteLine($"{attacker.Name} utilise {Name} ! {target.Name} perd {damage} PV !");
+                damage = (int)((2.0 * attacker.Level / 5.0 + 2) * Power * (attacker.Attack / (double)target.Defense) / 50.0 * totalMultiplier);
             }
             else if (Category == "Spéciale")
             {
-                int damage = (int)((attacker.SpecialAttack - target.SpecialDefense / 2.0) * GetTypeMultiplier(attacker.Type1, target.Type1));
-                target.Health -= Math.Max(1, damage);
-                Console.WriteLine($"{attacker.Name} utilise {Name} ! {target.Name} perd {damage} PV !");
+                damage = (int)((2.0 * attacker.Level / 5.0 + 2) * Power * (attacker.SpecialAttack / (double)target.SpecialDefense) / 50.0 * totalMultiplier);
             }
-            else if (Category == "Soutien")
+            else
             {
+                // Effet de soutien
                 Effect?.Invoke(attacker, target);
-                Console.WriteLine($"{attacker.Name} utilise {Name} !");
+                Console.WriteLine($"{attacker.Name} utilise {Name} ! {effectiveness}");
+                return;
             }
+
+            // Appliquer les dégâts
+            damage = Math.Max(1, damage); // Les dégâts doivent être au minimum de 1
+            target.Health -= damage;
+
+            Console.WriteLine($"{attacker.Name} utilise {Name} ! {target.Name} perd {damage} PV ! {effectiveness}");
         }
         else
         {
-            Console.WriteLine($"{attacker.Name} utilise {Name} mais l'attaque échoue !");
+            Console.WriteLine($"{attacker.Name} utilise {Name}, mais cela échoue !");
         }
-    }
-
-    private static double GetTypeMultiplier(string attackerType, string targetType)
-    {
-        // Utiliser la logique existante pour les multiplicateurs de types.
-        return 1.0; // Exemple simplifié
     }
 }
