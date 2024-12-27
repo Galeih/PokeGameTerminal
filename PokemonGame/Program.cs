@@ -19,35 +19,71 @@ class Program
 
         // Sélection du Pokémon de départ
         AfficherCadre("CHOISISSEZ VOTRE POKÉMON DE DÉPART", ConsoleColor.Magenta);
+
         string starterChoice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("[bold cyan]Choisissez un Pokémon de départ :[/]")
                 .AddChoices(
-                    "Pikachu ⚡ (Type : Électrique)",
+                    "Bulbizarre 🍃 (Type : Plante/Poison)",
                     "Salamèche 🔥 (Type : Feu)",
-                    "Carapuce 🌊 (Type : Eau)")
+                    "Carapuce 🌊 (Type : Eau)",
+                    "Pikachu ⚡ (Type : Électrique)")
         );
 
         Pokemon starter = starterChoice switch
         {
-            "Pikachu ⚡ (Type : Électrique)" => new Pokemon("Pikachu", 5, 35, 10, "Électrique"),
-            "Salamèche 🔥 (Type : Feu)" => new Pokemon("Salamèche", 5, 30, 12, "Feu"),
-            "Carapuce 🌊 (Type : Eau)" => new Pokemon("Carapuce", 5, 40, 8, "Eau"),
+            "Bulbizarre 🍃 (Type : Plante/Poison)" => new Pokemon("Bulbizarre", 5, 45, 49, "Plante", "Poison", 45),
+            "Salamèche 🔥 (Type : Feu)" => new Pokemon("Salamèche", 5, 39, 52, "Feu", null, 39),
+            "Carapuce 🌊 (Type : Eau)" => new Pokemon("Carapuce", 5, 44, 48, "Eau", null, 44),
+            "Pikachu ⚡ (Type : Électrique)" => new Pokemon("Pikachu", 5, 35, 55, "Électrique", null, 190),
             _ => throw new InvalidOperationException()
         };
 
-        starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-        starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
-        starter.LearnMove(new AttackLogic("Queue de Fer", "Acier", "Physique", 70, 75));
-        starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
+        // Définir les PV maximaux dès la création
+        starter.Health = starter.Level * 12; // Ajuste la formule si besoin
+
+        // Ajout des attaques initiales
+        switch (starter.Name)
         {
-            Console.WriteLine($"{target.Name} est paralysé !");
-            target.Speed /= 2;
-        }));
+            case "Bulbizarre":
+                starter.LearnMove(new AttackLogic("Fouet Lianes", "Plante", "Physique", 45, 100));
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Poudre Dodo", "Plante", "Soutien", 0, 75, (attacker, target) =>
+                {
+                    Console.WriteLine($"{target.Name} s'endort !");
+                    target.Status = "Endormi";
+                }));
+                break;
 
-        starter.Heal(); // Pour s'assurer qu'il a Level * 12 PV soit full HP
+            case "Salamèche":
+                starter.LearnMove(new AttackLogic("Griffe", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Flammèche", "Feu", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Grondement", "Normal", "Soutien", 0, 100));
+                break;
 
-        AnsiConsole.MarkupLine($"[bold green]🎉 {starter.Name} a rejoint votre équipe ![/]");
+            case "Carapuce":
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Pistolet à O", "Eau", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
+                starter.LearnMove(new AttackLogic("Protection", "Normal", "Soutien", 0, 100));
+                break;
+
+            case "Pikachu":
+                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Éclair", "Électrique", "Spéciale", 40, 100));
+                starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
+                starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
+                {
+                    Console.WriteLine($"{target.Name} est paralysé !");
+                    target.Status = "Paralysé";
+                }));
+                break;
+        }
+
+        // Confirmation du choix
+        AnsiConsole.MarkupLine($"[bold green]Félicitations, {starter.Name} a rejoint votre équipe ![/]");
         player.AddPokemon(starter);
 
         // Boucle principale : menu du jeu

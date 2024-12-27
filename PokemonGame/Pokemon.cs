@@ -1,41 +1,59 @@
-﻿namespace PokemonGame;
+﻿using Spectre.Console;
+
+namespace PokemonGame;
 
 public class Pokemon
 {
     // Propriétés principales
     public string Name { get; set; }
+
     public int Level { get; set; }
+
     public int Health { get; set; }
+
     public int Attack { get; set; }
+
     public int Defense { get; set; }
+
     public int SpecialAttack { get; set; }
+
     public int SpecialDefense { get; set; }
+
     public int Speed { get; set; }
+
     public int Experience { get; set; }
+
     public string Type1 { get; set; }
+
     public string? Type2 { get; set; }
+
+    public string? Status { get; set; } // Ex: Paralysé, Endormi, etc.
+
+    public int CaptureRate { get; set; } // Nouveau : Taux de capture de base du Pokémon
 
     // Liste des attaques
     public List<AttackLogic> Moves { get; set; } = new();
 
-    // Générateur aléatoire pour divers calculs
-    private static readonly Random RandomInstance = new();
-
     // Constructeur
-    public Pokemon(string name, int level, int health, int attack, string type1, string? type2 = null)
+    public Pokemon(string name, int level, int health, int attack, string type1, string? type2 = null, int captureRate = 255)
     {
         Name = name;
         Level = level;
         Health = health;
         Attack = attack;
         Defense = level * 2;
-        SpecialAttack = level * 3; // Exemple
-        SpecialDefense = level * 2; // Exemple
-        Speed = level * 3; // Exemple
+        SpecialAttack = level * 3;
+        SpecialDefense = level * 2;
+        Speed = level * 3;
         Experience = 0;
         Type1 = type1;
         Type2 = type2;
+        Status = null;
+        CaptureRate = captureRate; // Valeur par défaut : 255 (le plus facile à capturer)
     }
+
+    // Générateur aléatoire pour divers calculs
+    private static readonly Random RandomInstance = new();
 
     // Ajouter une attaque
     public void LearnMove(AttackLogic move)
