@@ -58,22 +58,7 @@ dotnet run
 3. **Combats**
    - Capturez de nouveaux Pokémon
 
-2. **Développement**
-```bash
-git commit -m "Description détaillée des changements"
-git push origin feature/nouvelle-fonctionnalite
-```
-
-3. **Pull Request**
-   - Créez une PR avec une description claire
-   - Attendez la review des mainteneurs
-
-## 📜 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
 ## 📧 Contact
 
 - **Créateur** : Galeih
 - **GitHub** : [Profil GitHub](https://github.com/Galeih)
-- **Issues** : Utilisez les issues GitHub pour les bugs et suggestions
