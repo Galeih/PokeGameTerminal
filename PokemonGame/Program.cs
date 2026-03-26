@@ -258,24 +258,31 @@ class Program
 
         Pokemon wildPokemon = WildPokemonData.GenerateWildPokemon(player.ZoneLevel, zoneName);
 
-        wildPokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-        wildPokemon.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));
-
         AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît dans la zone {zoneName} !", ConsoleColor.Blue);
 
         Battle battle = new(player, wildPokemon);
         battle.StartBattle();
 
-        if (wildPokemon.IsFainted())
+        if (battle.WasWildPokemonDefeated)
         {
-            bool capture = AnsiConsole.Confirm("[bold yellow]Le Pokémon ennemi est K.O. Voulez-vous le capturer ?[/]");
-            if (capture)
+            int experienceGained = ExperienceCalculator.CalculerExperienceGagnee(wildPokemon.Level);
+            Pokemon? firstAlive = player.Pokemons.FirstOrDefault(p => !p.IsFainted());
+            if (firstAlive != null)
             {
-                player.TryCatchPokemon(wildPokemon);
+                firstAlive.GainExperience(experienceGained);
             }
+
+            int reward = 8 + wildPokemon.Level * 3;
+            player.EarnMoney(reward);
+            AfficherCadre($"{wildPokemon.Name} vaincu ! +{experienceGained} XP et +{reward} pièces.", ConsoleColor.Green);
         }
 
         battleCount++;
+        if (battleCount % 3 == 0)
+        {
+            player.ZoneLevel++;
+            AfficherCadre($"Le niveau des zones augmente ! Nouveau niveau de zone : {player.ZoneLevel}", ConsoleColor.Yellow);
+        }
     }
 
     static void VoirEquipeOuResume(Player player)
@@ -320,6 +327,8 @@ class Program
         table.AddRow("Combats effectués", battleCount.ToString());
         table.AddRow("Pokémon capturés", (player.Pokemons.Count - 1).ToString());
         table.AddRow("Pokémon dans l'équipe", player.Pokemons.Count.ToString());
+        table.AddRow("Argent", $"{player.Money} pièces");
+        table.AddRow("Pokéballs", player.GetItemCount("Pokéball").ToString());
 
         AnsiConsole.Write(new Panel(table)
             .Header("STATISTIQUES DE JEU", Justify.Center)
@@ -360,6 +369,7 @@ class Program
         table.AddColumn("[bold]Attaque[/]");
         table.AddColumn("[bold]Type 1[/]");
         table.AddColumn("[bold]Type 2[/]");
+        table.AddColumn("[bold]Lieu[/]");
 
         foreach (Pokemon pokemon in player.Pokemons)
         {
@@ -369,7 +379,8 @@ class Program
                 $"{pokemon.Health}/{pokemon.Level * 12}",
                 pokemon.Attack.ToString(),
                 pokemon.Type1,
-                pokemon.Type2 ?? "-"
+                pokemon.Type2 ?? "-",
+                pokemon.EncounterLocation ?? "-"
             );
         }
 
@@ -395,6 +406,7 @@ class Program
         table.AddRow("Vitesse", pokemon.Speed.ToString());
         table.AddRow("Type 1", pokemon.Type1);
         table.AddRow("Type 2", pokemon.Type2 ?? "-");
+        table.AddRow("Lieu de rencontre", pokemon.EncounterLocation ?? "-");
 
         AnsiConsole.Write(new Panel(table)
             .Header($"Résumé de {pokemon.Name}", Justify.Center)
