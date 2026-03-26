@@ -5,13 +5,19 @@ public class Player(string name)
     public string Name { get; set; } = name;
     public List<Pokemon> Pokemons { get; set; } = new();
     public int Money { get; set; } = 100;
-    public int PokeBalls { get; set; } = 5;
     public int ZoneLevel { get; set; } = 1;
     public Dictionary<string, int> Inventory { get; set; } = new()
     {
         { "Potion", 3 },
-        { "Super Potion", 1 }
+        { "Super Potion", 1 },
+        { "Pokéball", 5 }
     };
+
+    public int PokeBalls
+    {
+        get => GetItemCount("Pokéball");
+        set => Inventory["Pokéball"] = Math.Max(0, value);
+    }
 
     public void AddPokemon(Pokemon pokemon)
     {
@@ -47,6 +53,34 @@ public class Player(string name)
         Console.WriteLine($"Vous avez acheté {item}. Il vous reste {Money} pièces.");
     }
 
+    public void EarnMoney(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        Money += amount;
+        Console.WriteLine($"Vous gagnez {amount} pièces. Total : {Money}.");
+    }
+
+    public int GetItemCount(string item)
+    {
+        return Inventory.TryGetValue(item, out int count) ? count : 0;
+    }
+
+    public bool TryUseItem(string item)
+    {
+        if (GetItemCount(item) <= 0)
+        {
+            Console.WriteLine($"Vous n'avez plus de {item}.");
+            return false;
+        }
+
+        Inventory[item]--;
+        return true;
+    }
+
     public Pokemon ChoosePokemon()
     {
         Console.WriteLine("Choisissez un Pokémon :");
@@ -66,18 +100,19 @@ public class Player(string name)
 
     public bool TryCatchPokemon(Pokemon wildPokemon)
     {
-        if (PokeBalls <= 0)
+        if (!TryUseItem("Pokéball"))
         {
             Console.WriteLine("Vous n'avez plus de Pokéballs !");
             return false;
         }
 
-        PokeBalls--;
-        Console.WriteLine($"Vous utilisez une Pokéball. Il vous en reste {PokeBalls}.");
+        Console.WriteLine($"Vous utilisez une Pokéball. Il vous en reste {GetItemCount("Pokéball")}.");
 
         Random random = new();
-        int chance = random.Next(40, 101);
-        int captureRate = Math.Max(10, (100 * wildPokemon.Health) / (wildPokemon.Level * 15));
+        int chance = random.Next(1, 101);
+        int maxHealth = Math.Max(1, wildPokemon.Level * 12);
+        int currentHealth = Math.Clamp(wildPokemon.Health, 1, maxHealth);
+        int captureRate = Math.Clamp(90 - (currentHealth * 70 / maxHealth), 15, 95);
 
         if (chance <= captureRate)
         {

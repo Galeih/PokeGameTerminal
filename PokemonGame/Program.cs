@@ -34,21 +34,16 @@ class Program
                     "Pikachu ⚡ (Type : Électrique)")
         );
 
-        // Créer le starter choisi
+        // Créer le starter avec les vraies données PokéAPI (stats + moves)
         Pokemon starter = starterChoice switch
         {
-            "Bulbizarre 🍃 (Type : Plante/Poison)" => new Pokemon("Bulbizarre", 5, 45, 49, "Plante", "Poison", 45),
-            "Salamèche 🔥 (Type : Feu)" => new Pokemon("Salamèche", 5, 39, 52, "Feu", null, 39),
-            "Carapuce 🌊 (Type : Eau)" => new Pokemon("Carapuce", 5, 44, 48, "Eau", null, 44),
-            "Pikachu ⚡ (Type : Électrique)" => new Pokemon("Pikachu", 5, 35, 55, "Électrique", null, 190),
+            "Bulbizarre 🍃 (Type : Plante/Poison)" => WildPokemonData.CreatePokemonFromApiOrFallback("bulbasaur", 5, new Pokemon("Bulbizarre", 5, 45, 49, "Plante", "Poison", 45)),
+            "Salamèche 🔥 (Type : Feu)" => WildPokemonData.CreatePokemonFromApiOrFallback("charmander", 5, new Pokemon("Salamèche", 5, 39, 52, "Feu", null, 39)),
+            "Carapuce 🌊 (Type : Eau)" => WildPokemonData.CreatePokemonFromApiOrFallback("squirtle", 5, new Pokemon("Carapuce", 5, 44, 48, "Eau", null, 44)),
+            "Pikachu ⚡ (Type : Électrique)" => WildPokemonData.CreatePokemonFromApiOrFallback("pikachu", 5, new Pokemon("Pikachu", 5, 35, 55, "Électrique", null, 190)),
             _ => throw new InvalidOperationException()
         };
 
-        // Définir les PV maximaux dès la création
-        starter.Health = starter.Level * 12;
-
-        // Ajout des attaques spécifiques
-        AjouterAttaquesInitiales(starter);
         AnsiConsole.MarkupLine(""); // Écart après les attaques
 
         // Confirmation avec dialogue
@@ -206,48 +201,6 @@ class Program
         Console.ReadKey(true); // Pause pour simuler un dialogue interactif
     }
 
-    static void AjouterAttaquesInitiales(Pokemon starter)
-    {
-        switch (starter.Name)
-        {
-            case "Bulbizarre":
-                starter.LearnMove(new AttackLogic("Fouet Lianes", "Plante", "Physique", 45, 100));
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Poudre Dodo", "Plante", "Soutien", 0, 75, (attacker, target) =>
-                {
-                    target.Status = "Endormi";
-                    Console.WriteLine($"{target.Name} s'endort !");
-                }));
-                break;
-
-            case "Salamèche":
-                starter.LearnMove(new AttackLogic("Griffe", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Flammèche", "Feu", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Grondement", "Normal", "Soutien", 0, 100));
-                break;
-
-            case "Carapuce":
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Pistolet à O", "Eau", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Rugissement", "Normal", "Soutien", 0, 100));
-                starter.LearnMove(new AttackLogic("Protection", "Normal", "Soutien", 0, 100));
-                break;
-
-            case "Pikachu":
-                starter.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Éclair", "Électrique", "Spéciale", 40, 100));
-                starter.LearnMove(new AttackLogic("Vive-Attaque", "Normal", "Physique", 40, 100));
-                starter.LearnMove(new AttackLogic("Cage-Éclair", "Électrique", "Soutien", 0, 90, (attacker, target) =>
-                {
-                    target.Status = "Paralysé";
-                    Console.WriteLine($"{target.Name} est paralysé !");
-                }));
-                break;
-        }
-    }
-
     static void CombatSauvage(ref int battleCount, Player player)
     {
         AnsiConsole.MarkupLine("");
@@ -258,24 +211,31 @@ class Program
 
         Pokemon wildPokemon = WildPokemonData.GenerateWildPokemon(player.ZoneLevel, zoneName);
 
-        wildPokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
-        wildPokemon.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));
-
         AfficherCadre($"Un [bold yellow]{wildPokemon.Name}[/] sauvage apparaît dans la zone {zoneName} !", ConsoleColor.Blue);
 
         Battle battle = new(player, wildPokemon);
         battle.StartBattle();
 
-        if (wildPokemon.IsFainted())
+        if (battle.WasWildPokemonDefeated)
         {
-            bool capture = AnsiConsole.Confirm("[bold yellow]Le Pokémon ennemi est K.O. Voulez-vous le capturer ?[/]");
-            if (capture)
+            int experienceGained = ExperienceCalculator.CalculerExperienceGagnee(wildPokemon.Level);
+            Pokemon? firstAlive = player.Pokemons.FirstOrDefault(p => !p.IsFainted());
+            if (firstAlive != null)
             {
-                player.TryCatchPokemon(wildPokemon);
+                firstAlive.GainExperience(experienceGained);
             }
+
+            int reward = 8 + wildPokemon.Level * 3;
+            player.EarnMoney(reward);
+            AfficherCadre($"{wildPokemon.Name} vaincu ! +{experienceGained} XP et +{reward} pièces.", ConsoleColor.Green);
         }
 
         battleCount++;
+        if (battleCount % 3 == 0)
+        {
+            player.ZoneLevel++;
+            AfficherCadre($"Le niveau des zones augmente ! Nouveau niveau de zone : {player.ZoneLevel}", ConsoleColor.Yellow);
+        }
     }
 
     static void VoirEquipeOuResume(Player player)
@@ -320,6 +280,8 @@ class Program
         table.AddRow("Combats effectués", battleCount.ToString());
         table.AddRow("Pokémon capturés", (player.Pokemons.Count - 1).ToString());
         table.AddRow("Pokémon dans l'équipe", player.Pokemons.Count.ToString());
+        table.AddRow("Argent", $"{player.Money} pièces");
+        table.AddRow("Pokéballs", player.GetItemCount("Pokéball").ToString());
 
         AnsiConsole.Write(new Panel(table)
             .Header("STATISTIQUES DE JEU", Justify.Center)
@@ -360,6 +322,7 @@ class Program
         table.AddColumn("[bold]Attaque[/]");
         table.AddColumn("[bold]Type 1[/]");
         table.AddColumn("[bold]Type 2[/]");
+        table.AddColumn("[bold]Lieu[/]");
 
         foreach (Pokemon pokemon in player.Pokemons)
         {
@@ -369,7 +332,8 @@ class Program
                 $"{pokemon.Health}/{pokemon.Level * 12}",
                 pokemon.Attack.ToString(),
                 pokemon.Type1,
-                pokemon.Type2 ?? "-"
+                pokemon.Type2 ?? "-",
+                pokemon.EncounterLocation ?? "-"
             );
         }
 
@@ -395,6 +359,7 @@ class Program
         table.AddRow("Vitesse", pokemon.Speed.ToString());
         table.AddRow("Type 1", pokemon.Type1);
         table.AddRow("Type 2", pokemon.Type2 ?? "-");
+        table.AddRow("Lieu de rencontre", pokemon.EncounterLocation ?? "-");
 
         AnsiConsole.Write(new Panel(table)
             .Header($"Résumé de {pokemon.Name}", Justify.Center)
