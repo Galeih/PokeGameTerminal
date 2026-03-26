@@ -209,17 +209,73 @@ public class Pokemon
     // Méthode améliorée pour le calcul du multiplicateur de type
     public static double GetTypeMultiplier(string attackerType, string targetType)
     {
-        if (NoEffectAgainst.TryGetValue(attackerType, out HashSet<string>? immuneTypes) && immuneTypes.Contains(targetType))
+        var strongAgainst = new Dictionary<string, HashSet<string>>
+        {
+            ["Normal"] = [],
+            ["Feu"] = ["Plante", "Glace", "Insecte", "Acier"],
+            ["Eau"] = ["Feu", "Sol", "Roche"],
+            ["Plante"] = ["Eau", "Sol", "Roche"],
+            ["Électrique"] = ["Eau", "Vol"],
+            ["Glace"] = ["Plante", "Sol", "Vol", "Dragon"],
+            ["Combat"] = ["Normal", "Glace", "Roche", "Ténèbres", "Acier"],
+            ["Poison"] = ["Plante", "Fée"],
+            ["Sol"] = ["Feu", "Électrique", "Poison", "Roche", "Acier"],
+            ["Vol"] = ["Plante", "Combat", "Insecte"],
+            ["Psy"] = ["Combat", "Poison"],
+            ["Insecte"] = ["Plante", "Psy", "Ténèbres"],
+            ["Roche"] = ["Feu", "Glace", "Vol", "Insecte"],
+            ["Spectre"] = ["Psy", "Spectre"],
+            ["Dragon"] = ["Dragon"],
+            ["Ténèbres"] = ["Psy", "Spectre"],
+            ["Acier"] = ["Glace", "Roche", "Fée"],
+            ["Fée"] = ["Combat", "Dragon", "Ténèbres"]
+        };
+
+        var weakAgainst = new Dictionary<string, HashSet<string>>
+        {
+            ["Normal"] = ["Roche", "Acier"],
+            ["Feu"] = ["Feu", "Eau", "Roche", "Dragon"],
+            ["Eau"] = ["Eau", "Plante", "Dragon"],
+            ["Plante"] = ["Feu", "Plante", "Poison", "Vol", "Insecte", "Dragon", "Acier"],
+            ["Électrique"] = ["Plante", "Électrique", "Dragon"],
+            ["Glace"] = ["Feu", "Eau", "Glace", "Acier"],
+            ["Combat"] = ["Poison", "Vol", "Psy", "Insecte", "Fée"],
+            ["Poison"] = ["Poison", "Sol", "Roche", "Spectre"],
+            ["Sol"] = ["Plante", "Insecte"],
+            ["Vol"] = ["Électrique", "Roche", "Acier"],
+            ["Psy"] = ["Psy", "Acier"],
+            ["Insecte"] = ["Feu", "Combat", "Poison", "Vol", "Spectre", "Acier", "Fée"],
+            ["Roche"] = ["Combat", "Sol", "Acier"],
+            ["Spectre"] = ["Ténèbres"],
+            ["Dragon"] = ["Acier"],
+            ["Ténèbres"] = ["Combat", "Ténèbres", "Fée"],
+            ["Acier"] = ["Feu", "Eau", "Électrique", "Acier"],
+            ["Fée"] = ["Feu", "Poison", "Acier"]
+        };
+
+        var noEffectAgainst = new Dictionary<string, HashSet<string>>
+        {
+            ["Normal"] = ["Spectre"],
+            ["Électrique"] = ["Sol"],
+            ["Combat"] = ["Spectre"],
+            ["Poison"] = ["Acier"],
+            ["Sol"] = ["Vol"],
+            ["Psy"] = ["Ténèbres"],
+            ["Spectre"] = ["Normal"],
+            ["Dragon"] = ["Fée"]
+        };
+
+        if (noEffectAgainst.TryGetValue(attackerType, out HashSet<string>? immuneTypes) && immuneTypes.Contains(targetType))
         {
             return 0.0;
         }
 
-        if (StrongAgainst.TryGetValue(attackerType, out HashSet<string>? superEffectiveTypes) && superEffectiveTypes.Contains(targetType))
+        if (strongAgainst.TryGetValue(attackerType, out HashSet<string>? superEffectiveTypes) && superEffectiveTypes.Contains(targetType))
         {
             return 2.0;
         }
 
-        if (WeakAgainst.TryGetValue(attackerType, out HashSet<string>? notVeryEffectiveTypes) && notVeryEffectiveTypes.Contains(targetType))
+        if (weakAgainst.TryGetValue(attackerType, out HashSet<string>? notVeryEffectiveTypes) && notVeryEffectiveTypes.Contains(targetType))
         {
             return 0.5;
         }

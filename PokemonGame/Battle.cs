@@ -8,6 +8,7 @@ public class Battle
     private readonly Pokemon _wildPokemon;
 
     public bool WasWildPokemonDefeated { get; private set; }
+    public bool WasWildPokemonCaptured { get; private set; }
 
     public Battle(Player player, Pokemon wildPokemon)
     {
@@ -66,6 +67,7 @@ public class Battle
                 case "Capturer":
                     if (CapturerPokemon(_wildPokemon))
                     {
+                        WasWildPokemonCaptured = true;
                         return;
                     }
 

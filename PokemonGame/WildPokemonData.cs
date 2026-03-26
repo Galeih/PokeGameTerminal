@@ -153,24 +153,115 @@ public static class WildPokemonData
         }
     }
 
+    public static Pokemon GenerateWildPokemon(int zoneLevel, string zoneName)
+    {
+        try
+        {
+            return GenerateWildPokemonFromApi(zoneLevel);
+        }
+        catch
+        {
+            return GenerateWildPokemonFallback(zoneLevel, zoneName);
+        }
+    }
+
+    private static Pokemon GenerateWildPokemonFromApi(int zoneLevel)
+    {
+        int generationLimit = 151;
+        int randomId = RandomInstance.Next(1, generationLimit + 1);
+        var apiPokemon = PokeApiClient.GetPokemonAsync(randomId.ToString()).GetAwaiter().GetResult();
+
+        string type1 = apiPokemon.Types.Count > 0
+            ? PokeApiMapper.ToGameType(apiPokemon.Types[0].Type.Name)
+            : "Normal";
+
+        string? type2 = apiPokemon.Types.Count > 1
+            ? PokeApiMapper.ToGameType(apiPokemon.Types[1].Type.Name)
+            : null;
+
+        int level = Math.Max(2, RandomInstance.Next(2, 6) + zoneLevel);
+        int attack = Math.Max(4, level * 2 + RandomInstance.Next(0, 4));
+        var pokemon = new Pokemon(
+            PokeApiMapper.ToDisplayName(apiPokemon.Name),
+            level,
+            level * 12,
+            attack,
+            type1,
+            type2,
+            captureRate: 160
+        );
+
+        AddApiMoves(apiPokemon, pokemon);
+
+        if (pokemon.Moves.Count == 0)
+        {
+            pokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+        }
+
+        return pokemon;
+    }
+
+    private static void AddApiMoves(PokeApiPokemon apiPokemon, Pokemon pokemon)
+    {
+        var candidates = apiPokemon.Moves
+            .Select(m => m.Move.Name)
+            .Distinct()
+            .OrderBy(_ => RandomInstance.Next())
+            .Take(20)
+            .ToList();
+
+        foreach (string moveName in candidates)
+        {
+            if (pokemon.Moves.Count >= 4)
+            {
+                break;
+            }
+
+            try
+            {
+                var move = PokeApiClient.GetMoveAsync(moveName).GetAwaiter().GetResult();
+                int power = move.Power ?? 0;
+                int accuracy = move.Accuracy ?? 100;
+                string category = PokeApiMapper.ToGameCategory(move.DamageClass.Name);
+                string type = PokeApiMapper.ToGameType(move.Type.Name);
+                string displayName = PokeApiMapper.ToDisplayName(move.Name);
+
+                if (category != "Soutien" && power <= 0)
+                {
+                    continue;
+                }
+
+                pokemon.LearnMove(new AttackLogic(displayName, type, category, power, accuracy));
+            }
+            catch
+            {
+                // Ignore les attaques non récupérables et continue.
+            }
+        }
+    }
+
     private static Pokemon GenerateWildPokemonFallback(int zoneLevel, string zoneName)
     {
-        if (!WildPokemonByZone.TryGetValue(zoneName, out List<Pokemon>? wildPokemons))
+        if (!WildPokemonByZone.ContainsKey(zoneName))
         {
             throw new ArgumentException($"Zone inconnue : {zoneName}");
         }
 
+        List<Pokemon> wildPokemons = WildPokemonByZone[zoneName];
         Pokemon basePokemon = wildPokemons[RandomInstance.Next(wildPokemons.Count)];
+
         Pokemon generated = new(
             basePokemon.Name,
             basePokemon.Level + zoneLevel,
             basePokemon.Health + zoneLevel * 5,
             basePokemon.Attack + zoneLevel * 2,
             basePokemon.Type1,
-            basePokemon.Type2);
+            basePokemon.Type2
+        );
 
-        generated.EncounterLocation = zoneName;
         generated.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+        generated.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));
+
         return generated;
     }
 }

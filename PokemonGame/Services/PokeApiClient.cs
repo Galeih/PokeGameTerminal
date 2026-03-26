@@ -40,12 +40,6 @@ public sealed class PokeApiClient
         return await GetWithCacheAsync<PokeApiMove>($"move/{nameOrId}", $"move-{key}.json");
     }
 
-    public async Task<List<PokeApiEncounter>> GetPokemonEncountersAsync(string nameOrId)
-    {
-        string key = SanitizeForFileName(nameOrId);
-        return await GetWithCacheAsync<List<PokeApiEncounter>>($"pokemon/{nameOrId}/encounters", $"encounters-{key}.json");
-    }
-
     private async Task<T> GetWithCacheAsync<T>(string endpoint, string cacheFileName)
     {
         string cachePath = Path.Combine(_cacheDirectory, cacheFileName);
