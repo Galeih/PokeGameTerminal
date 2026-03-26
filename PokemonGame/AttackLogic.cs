@@ -16,8 +16,7 @@ public class AttackLogic(string name, string type, string category, int power, i
 
     public void Use(Pokemon attacker, Pokemon target)
     {
-        Random random = new();
-        if (random.Next(100) < Accuracy)
+        if (Random.Shared.Next(100) < Accuracy)
         {
             // Calcul des multiplicateurs pour les deux types
             double multiplier1 = Pokemon.GetTypeMultiplier(Type, target.Type1);
@@ -47,7 +46,7 @@ public class AttackLogic(string name, string type, string category, int power, i
 
             // Appliquer les dégâts
             damage = Math.Max(1, damage); // Les dégâts doivent être au minimum de 1
-            target.Health -= damage;
+            target.Health = Math.Max(0, target.Health - damage);
 
             Console.WriteLine($"{attacker.Name} utilise {Name} ! {target.Name} perd {damage} PV ! {effectiveness}");
         }

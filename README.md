@@ -1,6 +1,6 @@
 # Pokémon Game Terminal [WORK IN PROGRESS]
 
-Un jeu Pokémon en ligne de commande développé en C# avec un gameplay interactif, des combats Pokémon, et une gestion d'expérience.
+Un jeu Pokémon en ligne de commande développé en C# avec un gameplay interactif, des combats Pokémon, une gestion d'expérience, et une intégration PokeAPI.
 
 ## 🕹️ Fonctionnalités
 
@@ -13,6 +13,8 @@ Un jeu Pokémon en ligne de commande développé en C# avec un gameplay interact
 - **Système d'expérience** : Système de progression élaboré où les Pokémon gagnent de l'expérience basée sur le niveau relatif des adversaires. Les statistiques évoluent de manière équilibrée à chaque niveau.
 
 - **Shop interactif** : Boutique complète proposant divers objets essentiels comme des potions, des Pokéballs et des objets de soin. Gérez votre argent et vos ressources stratégiquement.
+
+- **Données dynamiques via PokeAPI** : Génération de Pokémon sauvages et d'attaques depuis l'API officielle avec cache local et fallback hors-ligne.
 
 - **Interface stylisée** : Expérience utilisateur immersive grâce à Spectre.Console, offrant des menus colorés, des animations et des éléments visuels attrayants dans la console.
 
@@ -33,7 +35,7 @@ cd PokeGameTerminal
 ```
 
 2. **Configuration requise** :
-   - .NET SDK 6.0 ou supérieur
+   - .NET SDK 8.0 ou supérieur
    - Un terminal compatible avec Unicode
 
 3. **Exécution** :
@@ -52,7 +54,7 @@ dotnet run
 2. **Menu principal**
    - Exploration et combats
    - Gestion d'équipe
-   - Accès au centre Pokémon
+   - Soin de votre équipe
    - Boutique d'objets
 
 3. **Combats**

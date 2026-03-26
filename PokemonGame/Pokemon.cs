@@ -154,104 +154,78 @@ public class Pokemon
     // Méthode améliorée pour le calcul du multiplicateur de type
     public static double GetTypeMultiplier(string attackerType, string targetType)
     {
-        Dictionary<string, Dictionary<string, double>> typeAdvantages = new()
-    {
-        { "Normal", new()
-            {
-                { "Roche", 0.5 }, { "Acier", 0.5 }, { "Spectre", 0.0 },
-                { "Feu", 1.0 }, { "Eau", 1.0 }, { "Plante", 1.0 }, { "Électrique", 1.0 },
-                { "Glace", 1.0 }, { "Combat", 1.0 }, { "Poison", 1.0 }, { "Sol", 1.0 },
-                { "Vol", 1.0 }, { "Psy", 1.0 }, { "Insecte", 1.0 }, { "Dragon", 1.0 },
-                { "Ténèbres", 1.0 }, { "Fée", 1.0 }
-            }},
-        { "Feu", new()
-            {
-                { "Plante", 2.0 }, { "Glace", 2.0 }, { "Insecte", 2.0 }, { "Acier", 2.0 },
-                { "Eau", 0.5 }, { "Roche", 0.5 }, { "Dragon", 0.5 }, { "Feu", 0.5 },
-                { "Électrique", 1.0 }, { "Combat", 1.0 }, { "Poison", 1.0 }, { "Sol", 1.0 },
-                { "Vol", 1.0 }, { "Psy", 1.0 }, { "Spectre", 1.0 }, { "Ténèbres", 1.0 },
-                { "Fée", 1.0 }
-            }},
-        { "Eau", new()
-            {
-                { "Feu", 2.0 }, { "Roche", 2.0 }, { "Sol", 2.0 },
-                { "Eau", 0.5 }, { "Plante", 0.5 }, { "Dragon", 0.5 },
-                { "Électrique", 1.0 }, { "Combat", 1.0 }, { "Poison", 1.0 },
-                { "Vol", 1.0 }, { "Psy", 1.0 }, { "Spectre", 1.0 }, { "Insecte", 1.0 },
-                { "Ténèbres", 1.0 }, { "Fée", 1.0 }
-            }},
-        { "Plante", new()
-            {
-                { "Eau", 2.0 }, { "Roche", 2.0 }, { "Sol", 2.0 },
-                { "Feu", 0.5 }, { "Plante", 0.5 }, { "Insecte", 0.5 },
-                { "Dragon", 0.5 }, { "Vol", 0.5 },
-                { "Électrique", 1.0 }, { "Combat", 1.0 }, { "Poison", 1.0 },
-                { "Spectre", 1.0 }, { "Glace", 1.0 }, { "Ténèbres", 1.0 },
-                { "Fée", 1.0 }
-            }},
-        { "Électrique", new()
-            {
-                { "Eau", 2.0 }, { "Vol", 2.0 },
-                { "Plante", 0.5 }, { "Dragon", 0.5 }, { "Électrique", 0.5 },
-                { "Sol", 0.0 },
-                { "Feu", 1.0 }, { "Glace", 1.0 }, { "Combat", 1.0 },
-                { "Poison", 1.0 }, { "Spectre", 1.0 }, { "Ténèbres", 1.0 },
-                { "Fée", 1.0 }
-            }},
-        { "Glace", new()
-            {
-                { "Plante", 2.0 }, { "Sol", 2.0 }, { "Dragon", 2.0 }, { "Vol", 2.0 },
-                { "Eau", 0.5 }, { "Feu", 0.5 }, { "Glace", 0.5 }, { "Acier", 0.5 },
-                { "Électrique", 1.0 }, { "Combat", 1.0 }, { "Poison", 1.0 },
-                { "Spectre", 1.0 }, { "Ténèbres", 1.0 }, { "Fée", 1.0 }
-            }},
-        { "Combat", new()
-            {
-                { "Normal", 2.0 }, { "Roche", 2.0 }, { "Glace", 2.0 }, { "Ténèbres", 2.0 },
-                { "Acier", 2.0 },
-                { "Psy", 0.5 }, { "Vol", 0.5 }, { "Fée", 0.5 }, { "Spectre", 0.0 },
-                { "Feu", 1.0 }, { "Eau", 1.0 }, { "Plante", 1.0 },
-                { "Électrique", 1.0 }, { "Insecte", 1.0 }, { "Dragon", 1.0 }
-            }},
-        { "Poison", new()
-            {
-                { "Plante", 2.0 }, { "Fée", 2.0 },
-                { "Roche", 0.5 }, { "Sol", 0.5 }, { "Spectre", 0.5 },
-                { "Poison", 0.5 }, { "Acier", 0.0 },
-                { "Feu", 1.0 }, { "Eau", 1.0 }, { "Électrique", 1.0 },
-                { "Combat", 1.0 }, { "Insecte", 1.0 }, { "Vol", 1.0 },
-                { "Psy", 1.0 }, { "Ténèbres", 1.0 }
-            }},
-        { "Sol", new()
-            {
-                { "Feu", 2.0 }, { "Électrique", 2.0 }, { "Roche", 2.0 },
-                { "Acier", 2.0 }, { "Plante", 0.5 }, { "Insecte", 0.5 },
-                { "Vol", 0.0 },
-                { "Eau", 1.0 }, { "Psy", 1.0 }, { "Spectre", 1.0 }, { "Ténèbres", 1.0 },
-                { "Fée", 1.0 }
-            }},
-        { "Vol", new()
-            {
-                { "Plante", 2.0 }, { "Combat", 2.0 }, { "Insecte", 2.0 },
-                { "Électrique", 0.5 }, { "Roche", 0.5 }, { "Acier", 0.5 },
-                { "Feu", 1.0 }, { "Eau", 1.0 }, { "Glace", 1.0 }, { "Dragon", 1.0 }
-            }},
-        // Complétez les autres types ici...
-    };
-
-        if (!typeAdvantages.ContainsKey(attackerType))
+        var strongAgainst = new Dictionary<string, HashSet<string>>
         {
-            Console.WriteLine($"[ERREUR] Type attaquant inconnu : {attackerType}");
-            return 1.0; // Neutre par défaut
+            ["Normal"] = [],
+            ["Feu"] = ["Plante", "Glace", "Insecte", "Acier"],
+            ["Eau"] = ["Feu", "Sol", "Roche"],
+            ["Plante"] = ["Eau", "Sol", "Roche"],
+            ["Électrique"] = ["Eau", "Vol"],
+            ["Glace"] = ["Plante", "Sol", "Vol", "Dragon"],
+            ["Combat"] = ["Normal", "Glace", "Roche", "Ténèbres", "Acier"],
+            ["Poison"] = ["Plante", "Fée"],
+            ["Sol"] = ["Feu", "Électrique", "Poison", "Roche", "Acier"],
+            ["Vol"] = ["Plante", "Combat", "Insecte"],
+            ["Psy"] = ["Combat", "Poison"],
+            ["Insecte"] = ["Plante", "Psy", "Ténèbres"],
+            ["Roche"] = ["Feu", "Glace", "Vol", "Insecte"],
+            ["Spectre"] = ["Psy", "Spectre"],
+            ["Dragon"] = ["Dragon"],
+            ["Ténèbres"] = ["Psy", "Spectre"],
+            ["Acier"] = ["Glace", "Roche", "Fée"],
+            ["Fée"] = ["Combat", "Dragon", "Ténèbres"]
+        };
+
+        var weakAgainst = new Dictionary<string, HashSet<string>>
+        {
+            ["Normal"] = ["Roche", "Acier"],
+            ["Feu"] = ["Feu", "Eau", "Roche", "Dragon"],
+            ["Eau"] = ["Eau", "Plante", "Dragon"],
+            ["Plante"] = ["Feu", "Plante", "Poison", "Vol", "Insecte", "Dragon", "Acier"],
+            ["Électrique"] = ["Plante", "Électrique", "Dragon"],
+            ["Glace"] = ["Feu", "Eau", "Glace", "Acier"],
+            ["Combat"] = ["Poison", "Vol", "Psy", "Insecte", "Fée"],
+            ["Poison"] = ["Poison", "Sol", "Roche", "Spectre"],
+            ["Sol"] = ["Plante", "Insecte"],
+            ["Vol"] = ["Électrique", "Roche", "Acier"],
+            ["Psy"] = ["Psy", "Acier"],
+            ["Insecte"] = ["Feu", "Combat", "Poison", "Vol", "Spectre", "Acier", "Fée"],
+            ["Roche"] = ["Combat", "Sol", "Acier"],
+            ["Spectre"] = ["Ténèbres"],
+            ["Dragon"] = ["Acier"],
+            ["Ténèbres"] = ["Combat", "Ténèbres", "Fée"],
+            ["Acier"] = ["Feu", "Eau", "Électrique", "Acier"],
+            ["Fée"] = ["Feu", "Poison", "Acier"]
+        };
+
+        var noEffectAgainst = new Dictionary<string, HashSet<string>>
+        {
+            ["Normal"] = ["Spectre"],
+            ["Électrique"] = ["Sol"],
+            ["Combat"] = ["Spectre"],
+            ["Poison"] = ["Acier"],
+            ["Sol"] = ["Vol"],
+            ["Psy"] = ["Ténèbres"],
+            ["Spectre"] = ["Normal"],
+            ["Dragon"] = ["Fée"]
+        };
+
+        if (noEffectAgainst.TryGetValue(attackerType, out HashSet<string>? immuneTypes) && immuneTypes.Contains(targetType))
+        {
+            return 0.0;
         }
 
-        var advantages = typeAdvantages[attackerType];
-        if (!advantages.ContainsKey(targetType))
+        if (strongAgainst.TryGetValue(attackerType, out HashSet<string>? superEffectiveTypes) && superEffectiveTypes.Contains(targetType))
         {
-            Console.WriteLine($"[INFO] Type cible inconnu ou neutre pour {attackerType} → {targetType}");
+            return 2.0;
         }
 
-        return advantages.ContainsKey(targetType) ? advantages[targetType] : 1.0;
+        if (weakAgainst.TryGetValue(attackerType, out HashSet<string>? notVeryEffectiveTypes) && notVeryEffectiveTypes.Contains(targetType))
+        {
+            return 0.5;
+        }
+
+        return 1.0;
     }
 
     // Nouvelle méthode pour afficher une description de l'efficacité

@@ -1,35 +1,42 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace PokemonGame;
 
 public class Battle
 {
-    private Player Player;
-    private Pokemon WildPokemon;
+    private readonly Player _player;
+    private readonly Pokemon _wildPokemon;
+
+    public bool WasWildPokemonDefeated { get; private set; }
+    public bool WasWildPokemonCaptured { get; private set; }
 
     public Battle(Player player, Pokemon wildPokemon)
     {
-        Player = player;
-        WildPokemon = wildPokemon;
-        WildPokemon.Health = WildPokemon.Level * 12; // Maximiser les PV du Pokémon adverse
+        _player = player;
+        _wildPokemon = wildPokemon;
+        _wildPokemon.Health = _wildPokemon.Level * 12;
     }
 
     public void StartBattle()
     {
-        Pokemon playerPokemon = Player.Pokemons.FirstOrDefault(p => !p.IsFainted());
+        Pokemon? playerPokemon = _player.Pokemons.FirstOrDefault(p => !p.IsFainted());
         if (playerPokemon == null)
         {
             AnsiConsole.MarkupLine("[bold red]Tous vos Pokémon sont K.O. Vous ne pouvez pas combattre ![/]");
             return;
         }
 
-        AnsiConsole.MarkupLine($"[bold yellow]Un {WildPokemon.Name} sauvage apparaît ![/]");
-
-        while (!playerPokemon.IsFainted() && !WildPokemon.IsFainted())
+        if (_wildPokemon.Moves.Count == 0)
         {
-            AfficherBarreDeVie(playerPokemon, WildPokemon);
+            _wildPokemon.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
+        }
 
-            // Menu principal du combat
+        AnsiConsole.MarkupLine($"[bold yellow]Un {_wildPokemon.Name} sauvage apparaît ![/]");
+
+        while (!playerPokemon.IsFainted() && !_wildPokemon.IsFainted())
+        {
+            AfficherBarreDeVie(playerPokemon, _wildPokemon);
+
             string action = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold green]Que voulez-vous faire ?[/]")
@@ -38,73 +45,74 @@ public class Battle
             switch (action)
             {
                 case "Attaquer":
-                    ChoisirAttaque(playerPokemon, WildPokemon);
+                    ChoisirAttaque(playerPokemon, _wildPokemon);
                     break;
                 case "Sac":
                     if (UtiliserObjet(playerPokemon))
                     {
-                        break; // Passe un tour uniquement si un objet a été utilisé
+                        break;
                     }
-                    continue; // Retour au menu principal sans passer de tour
+                    continue;
                 case "Pokémon":
-                    var nouveauPokemon = ChangerPokemon(playerPokemon);
+                    Pokemon? nouveauPokemon = ChangerPokemon(playerPokemon);
                     if (nouveauPokemon == null || nouveauPokemon == playerPokemon)
                     {
                         AnsiConsole.MarkupLine("[bold yellow]Vous avez annulé le changement de Pokémon.[/]");
                         continue;
                     }
+
                     playerPokemon = nouveauPokemon;
                     AnsiConsole.MarkupLine($"[bold green]Allez, {playerPokemon.Name} ![/]");
                     break;
                 case "Capturer":
-                    if (CapturerPokemon(WildPokemon))
+                    if (CapturerPokemon(_wildPokemon))
                     {
-                        AnsiConsole.MarkupLine($"[bold green]Félicitations ! Vous avez capturé {WildPokemon.Name} ![/]");
-                        Player.AddPokemon(WildPokemon);
-                        return; // Le combat se termine après la capture.
+                        WasWildPokemonCaptured = true;
+                        return;
                     }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[bold red]Le Pokémon sauvage s'est échappé de la Pokéball ![/]");
-                    }
+
+                    AnsiConsole.MarkupLine("[bold red]Le Pokémon sauvage s'est échappé de la Pokéball ![/]");
                     break;
                 case "Fuite":
-                    if (TenterFuite(playerPokemon, WildPokemon))
+                    if (TenterFuite(playerPokemon, _wildPokemon))
                     {
                         AnsiConsole.MarkupLine("[bold yellow]Vous avez réussi à fuir le combat ![/]");
                         return;
                     }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[bold red]Vous n'avez pas pu fuir ![/]");
-                    }
+
+                    AnsiConsole.MarkupLine("[bold red]Vous n'avez pas pu fuir ![/]");
                     break;
             }
 
-            if (WildPokemon.IsFainted())
+            if (_wildPokemon.IsFainted())
             {
-                AnsiConsole.MarkupLine($"[bold green]{WildPokemon.Name} est K.O. ![/]");
+                WasWildPokemonDefeated = true;
+                AnsiConsole.MarkupLine($"[bold green]{_wildPokemon.Name} est K.O. ![/]");
                 break;
             }
 
-            // Tour du Pokémon sauvage
-            Random random = new();
-            int randomMoveIndex = random.Next(WildPokemon.Moves.Count);
-            WildPokemon.UseMove(WildPokemon.Moves[randomMoveIndex].Name, playerPokemon);
+            int randomMoveIndex = Random.Shared.Next(_wildPokemon.Moves.Count);
+            _wildPokemon.UseMove(_wildPokemon.Moves[randomMoveIndex].Name, playerPokemon);
 
-            if (playerPokemon.IsFainted())
+            if (!playerPokemon.IsFainted())
             {
-                AnsiConsole.MarkupLine($"[bold red]{playerPokemon.Name} est K.O. ![/]");
-                if (Player.Pokemons.Any(p => !p.IsFainted()))
+                continue;
+            }
+
+            AnsiConsole.MarkupLine($"[bold red]{playerPokemon.Name} est K.O. ![/]");
+            if (_player.Pokemons.Any(p => !p.IsFainted()))
+            {
+                AnsiConsole.MarkupLine("[bold yellow]Choisissez un autre Pokémon ![/]");
+                Pokemon? remplacement = ChangerPokemon(playerPokemon);
+                if (remplacement != null)
                 {
-                    AnsiConsole.MarkupLine("[bold yellow]Choisissez un autre Pokémon ![/]");
-                    playerPokemon = ChangerPokemon(playerPokemon);
+                    playerPokemon = remplacement;
                 }
-                else
-                {
-                    AnsiConsole.MarkupLine("[bold red]Tous vos Pokémon sont K.O. ![/]");
-                    break;
-                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[bold red]Tous vos Pokémon sont K.O. ![/]");
+                break;
             }
         }
     }
@@ -135,41 +143,59 @@ public class Battle
         switch (choix)
         {
             case "Potion":
+                if (!_player.TryUseItem("Potion"))
+                {
+                    AnsiConsole.MarkupLine("[bold red]Vous n'avez plus de Potion.[/]");
+                    return false;
+                }
+
                 playerPokemon.Health = Math.Min(playerPokemon.Level * 12, playerPokemon.Health + 20);
-                AnsiConsole.MarkupLine("[bold green]Vous utilisez une Potion. PV restaurés ![/]");
-                return true; // Compte comme un tour
+                AnsiConsole.MarkupLine($"[bold green]Vous utilisez une Potion. Stock restant : {_player.GetItemCount("Potion")}[/]");
+                return true;
             case "Super Potion":
+                if (!_player.TryUseItem("Super Potion"))
+                {
+                    AnsiConsole.MarkupLine("[bold red]Vous n'avez plus de Super Potion.[/]");
+                    return false;
+                }
+
                 playerPokemon.Health = Math.Min(playerPokemon.Level * 12, playerPokemon.Health + 50);
-                AnsiConsole.MarkupLine("[bold green]Vous utilisez une Super Potion. PV restaurés ![/]");
-                return true; // Compte comme un tour
+                AnsiConsole.MarkupLine($"[bold green]Vous utilisez une Super Potion. Stock restant : {_player.GetItemCount("Super Potion")}[/]");
+                return true;
             case "Pokéball":
-                AnsiConsole.MarkupLine("[bold yellow]Vous ne pouvez pas capturer un Pokémon avec un objet ici. Utilisez l'option 'Capturer'.[/]");
-                return false; // Ne compte pas comme un tour
+                AnsiConsole.MarkupLine("[bold yellow]Utilisez l'option 'Capturer' pour lancer une Pokéball.[/]");
+                return false;
             case "Retour":
                 AnsiConsole.MarkupLine("[bold yellow]Vous retournez au menu principal.[/]");
-                return false; // Ne compte pas comme un tour
+                return false;
+            default:
+                return false;
         }
-
-        return false; // Par défaut, ne compte pas comme un tour
     }
 
     private Pokemon? ChangerPokemon(Pokemon currentPokemon)
     {
-        var choixPokemon = new SelectionPrompt<string>()
-            .Title("[bold cyan]Choisissez un Pokémon :[/]")
-            .AddChoices(Player.Pokemons
-                .Where(p => !p.IsFainted())
-                .Select(p => $"{p.Name} (PV : {p.Health}/{p.Level * 12})")
-                .ToList());
+        List<string> availablePokemons = _player.Pokemons
+            .Where(p => !p.IsFainted())
+            .Select(p => $"{p.Name} (PV : {Math.Max(0, p.Health)}/{p.Level * 12})")
+            .ToList();
 
-        string choix = AnsiConsole.Prompt(choixPokemon);
+        if (availablePokemons.Count == 0)
+        {
+            return null;
+        }
+
+        string choix = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold cyan]Choisissez un Pokémon :[/]")
+                .AddChoices(availablePokemons));
+
         string nomPokemon = choix.Split('(')[0].Trim();
-
-        var nouveauPokemon = Player.Pokemons.FirstOrDefault(p => p.Name == nomPokemon);
+        Pokemon? nouveauPokemon = _player.Pokemons.FirstOrDefault(p => p.Name == nomPokemon);
 
         if (nouveauPokemon == currentPokemon)
         {
-            return null; // Annule si le Pokémon sélectionné est déjà en combat.
+            return null;
         }
 
         return nouveauPokemon;
@@ -177,40 +203,41 @@ public class Battle
 
     private bool CapturerPokemon(Pokemon target)
     {
-        if (Player.PokeBalls <= 0)
+        if (!_player.TryUseItem("Pokéball"))
         {
             AnsiConsole.MarkupLine("[bold red]Vous n'avez plus de Pokéballs ![/]");
             return false;
         }
 
-        Player.PokeBalls--;
-        AnsiConsole.MarkupLine($"[bold yellow]Vous utilisez une Pokéball. Il vous en reste {Player.PokeBalls}.[/]");
+        AnsiConsole.MarkupLine($"[bold yellow]Vous utilisez une Pokéball. Il vous en reste {_player.GetItemCount("Pokéball")}.[/]");
 
-        // Calcul du taux de capture
-        Random random = new();
-        double tauxCaptureBase = target.CaptureRate / 255.0; // Taux de capture normalisé (0 à 1)
-        double tauxVie = 1.0 - (target.Health / (double)(target.Level * 12)); // En fonction des PV restants
-        double bonusStatut = target.Status == "Paralysé" || target.Status == "Gelé" ? 0.2 : target.Status == "Endormi" ? 0.3 : 0.0;
+        int maxHealth = Math.Max(1, target.Level * 12);
+        int currentHealth = Math.Clamp(target.Health, 1, maxHealth);
 
-        double tauxFinal = Math.Min(0.95, tauxCaptureBase * (tauxVie + bonusStatut)); // Limité à 95%
-        if (random.NextDouble() < tauxFinal)
+        double tauxCaptureBase = target.CaptureRate / 255.0;
+        double tauxVie = 1.0 - (currentHealth / (double)maxHealth);
+        double bonusStatut = target.Status == "Paralysé" || target.Status == "Gelé"
+            ? 0.2
+            : target.Status == "Endormi"
+                ? 0.3
+                : 0.0;
+
+        double tauxFinal = Math.Clamp(tauxCaptureBase * (0.35 + tauxVie + bonusStatut), 0.05, 0.95);
+        if (Random.Shared.NextDouble() < tauxFinal)
         {
             AnsiConsole.MarkupLine($"[bold green]Félicitations ! Vous avez capturé {target.Name} ![/]");
-            Player.AddPokemon(target);
+            _player.AddPokemon(target);
             return true;
         }
-        else
-        {
-            AnsiConsole.MarkupLine($"[bold red]{target.Name} s'est échappé ![/]");
-            return false;
-        }
+
+        AnsiConsole.MarkupLine($"[bold red]{target.Name} s'est échappé ![/]");
+        return false;
     }
 
-
-    private bool TenterFuite(Pokemon playerPokemon, Pokemon wildPokemon)
+    private static bool TenterFuite(Pokemon playerPokemon, Pokemon wildPokemon)
     {
-        Random random = new();
-        return random.Next(0, 100) < 50; // 50% de chance de fuite
+        int chance = playerPokemon.Speed >= wildPokemon.Speed ? 65 : 40;
+        return Random.Shared.Next(0, 100) < chance;
     }
 
     private void AfficherBarreDeVie(Pokemon p1, Pokemon p2)
@@ -222,20 +249,20 @@ public class Battle
 
         table.AddRow(
             p1.Name,
-            $"{p1.Health}/{p1.Level * 12}",
-            GetBarreDeVie(p1.Health, p1.Level * 12)
+            $"{Math.Max(0, p1.Health)}/{p1.Level * 12}",
+            GetBarreDeVie(Math.Max(0, p1.Health), p1.Level * 12)
         );
 
         table.AddRow(
             p2.Name,
-            $"{p2.Health}/{p2.Level * 12}",
-            GetBarreDeVie(p2.Health, p2.Level * 12)
+            $"{Math.Max(0, p2.Health)}/{p2.Level * 12}",
+            GetBarreDeVie(Math.Max(0, p2.Health), p2.Level * 12)
         );
 
         AnsiConsole.Write(table);
     }
 
-    private string GetBarreDeVie(int current, int max)
+    private static string GetBarreDeVie(int current, int max)
     {
         const int totalBarres = 20;
         int barresRemplies = (int)((current / (double)max) * totalBarres);
@@ -243,8 +270,8 @@ public class Battle
 
         string color = current > max * 0.5 ? "green" : current > max * 0.2 ? "yellow" : "red";
 
-        string filledBar = new string('█', barresRemplies);
-        string emptyBar = new string('░', barresVides);
+        string filledBar = new('█', barresRemplies);
+        string emptyBar = new('░', barresVides);
 
         return $"[bold {color}]{filledBar}[/]{emptyBar}";
     }
