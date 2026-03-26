@@ -29,6 +29,8 @@ public class Pokemon
 
     public string? Status { get; set; } // Ex: Paralysé, Endormi, etc.
 
+    public string? EncounterLocation { get; set; }
+
     public int CaptureRate { get; set; } // Nouveau : Taux de capture de base du Pokémon
 
     // Liste des attaques
@@ -52,8 +54,61 @@ public class Pokemon
         CaptureRate = captureRate; // Valeur par défaut : 255 (le plus facile à capturer)
     }
 
-    // Générateur aléatoire pour divers calculs
-    private static readonly Random RandomInstance = new();
+    private static readonly Dictionary<string, HashSet<string>> StrongAgainst = new()
+    {
+        ["Normal"] = [],
+        ["Feu"] = ["Plante", "Glace", "Insecte", "Acier"],
+        ["Eau"] = ["Feu", "Sol", "Roche"],
+        ["Plante"] = ["Eau", "Sol", "Roche"],
+        ["Électrique"] = ["Eau", "Vol"],
+        ["Glace"] = ["Plante", "Sol", "Vol", "Dragon"],
+        ["Combat"] = ["Normal", "Glace", "Roche", "Ténèbres", "Acier"],
+        ["Poison"] = ["Plante", "Fée"],
+        ["Sol"] = ["Feu", "Électrique", "Poison", "Roche", "Acier"],
+        ["Vol"] = ["Plante", "Combat", "Insecte"],
+        ["Psy"] = ["Combat", "Poison"],
+        ["Insecte"] = ["Plante", "Psy", "Ténèbres"],
+        ["Roche"] = ["Feu", "Glace", "Vol", "Insecte"],
+        ["Spectre"] = ["Psy", "Spectre"],
+        ["Dragon"] = ["Dragon"],
+        ["Ténèbres"] = ["Psy", "Spectre"],
+        ["Acier"] = ["Glace", "Roche", "Fée"],
+        ["Fée"] = ["Combat", "Dragon", "Ténèbres"]
+    };
+
+    private static readonly Dictionary<string, HashSet<string>> WeakAgainst = new()
+    {
+        ["Normal"] = ["Roche", "Acier"],
+        ["Feu"] = ["Feu", "Eau", "Roche", "Dragon"],
+        ["Eau"] = ["Eau", "Plante", "Dragon"],
+        ["Plante"] = ["Feu", "Plante", "Poison", "Vol", "Insecte", "Dragon", "Acier"],
+        ["Électrique"] = ["Plante", "Électrique", "Dragon"],
+        ["Glace"] = ["Feu", "Eau", "Glace", "Acier"],
+        ["Combat"] = ["Poison", "Vol", "Psy", "Insecte", "Fée"],
+        ["Poison"] = ["Poison", "Sol", "Roche", "Spectre"],
+        ["Sol"] = ["Plante", "Insecte"],
+        ["Vol"] = ["Électrique", "Roche", "Acier"],
+        ["Psy"] = ["Psy", "Acier"],
+        ["Insecte"] = ["Feu", "Combat", "Poison", "Vol", "Spectre", "Acier", "Fée"],
+        ["Roche"] = ["Combat", "Sol", "Acier"],
+        ["Spectre"] = ["Ténèbres"],
+        ["Dragon"] = ["Acier"],
+        ["Ténèbres"] = ["Combat", "Ténèbres", "Fée"],
+        ["Acier"] = ["Feu", "Eau", "Électrique", "Acier"],
+        ["Fée"] = ["Feu", "Poison", "Acier"]
+    };
+
+    private static readonly Dictionary<string, HashSet<string>> NoEffectAgainst = new()
+    {
+        ["Normal"] = ["Spectre"],
+        ["Électrique"] = ["Sol"],
+        ["Combat"] = ["Spectre"],
+        ["Poison"] = ["Acier"],
+        ["Sol"] = ["Vol"],
+        ["Psy"] = ["Ténèbres"],
+        ["Spectre"] = ["Normal"],
+        ["Dragon"] = ["Fée"]
+    };
 
     // Ajouter une attaque
     public void LearnMove(AttackLogic move)

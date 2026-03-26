@@ -369,6 +369,7 @@ class Program
         table.AddColumn("[bold]Attaque[/]");
         table.AddColumn("[bold]Type 1[/]");
         table.AddColumn("[bold]Type 2[/]");
+        table.AddColumn("[bold]Lieu[/]");
 
         foreach (Pokemon pokemon in player.Pokemons)
         {
@@ -378,7 +379,8 @@ class Program
                 $"{pokemon.Health}/{pokemon.Level * 12}",
                 pokemon.Attack.ToString(),
                 pokemon.Type1,
-                pokemon.Type2 ?? "-"
+                pokemon.Type2 ?? "-",
+                pokemon.EncounterLocation ?? "-"
             );
         }
 
@@ -404,6 +406,7 @@ class Program
         table.AddRow("Vitesse", pokemon.Speed.ToString());
         table.AddRow("Type 1", pokemon.Type1);
         table.AddRow("Type 2", pokemon.Type2 ?? "-");
+        table.AddRow("Lieu de rencontre", pokemon.EncounterLocation ?? "-");
 
         AnsiConsole.Write(new Panel(table)
             .Header($"Résumé de {pokemon.Name}", Justify.Center)
