@@ -42,9 +42,6 @@ public sealed class PokeApiPokemon
 
     [JsonPropertyName("moves")]
     public List<PokeApiPokemonMoveEntry> Moves { get; set; } = new();
-
-    [JsonPropertyName("stats")]
-    public List<PokeApiPokemonStatEntry> Stats { get; set; } = new();
 }
 
 public sealed class PokeApiMove
@@ -63,19 +60,4 @@ public sealed class PokeApiMove
 
     [JsonPropertyName("damage_class")]
     public PokeApiNamedResource DamageClass { get; set; } = new();
-}
-
-public sealed class PokeApiPokemonStatEntry
-{
-    [JsonPropertyName("base_stat")]
-    public int BaseStat { get; set; }
-
-    [JsonPropertyName("stat")]
-    public PokeApiNamedResource Stat { get; set; } = new();
-}
-
-public sealed class PokeApiEncounter
-{
-    [JsonPropertyName("location_area")]
-    public PokeApiNamedResource LocationArea { get; set; } = new();
 }

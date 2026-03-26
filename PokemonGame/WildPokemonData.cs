@@ -106,32 +106,16 @@ public static class WildPokemonData
             : null;
 
         int level = Math.Max(2, RandomInstance.Next(2, 6) + zoneLevel);
-        int hpBase = GetStat(apiPokemon, "hp", fallback: 45);
-        int attackBase = GetStat(apiPokemon, "attack", fallback: 49);
-        int defenseBase = GetStat(apiPokemon, "defense", fallback: 49);
-        int specialAttackBase = GetStat(apiPokemon, "special-attack", fallback: 50);
-        int specialDefenseBase = GetStat(apiPokemon, "special-defense", fallback: 50);
-        int speedBase = GetStat(apiPokemon, "speed", fallback: 45);
-
+        int attack = Math.Max(4, level * 2 + RandomInstance.Next(0, 4));
         var pokemon = new Pokemon(
             PokeApiMapper.ToDisplayName(apiPokemon.Name),
             level,
-            Math.Max(level * 8, hpBase + level * 2),
-            Math.Max(4, attackBase / 2 + level),
+            level * 12,
+            attack,
             type1,
             type2,
             captureRate: 160
         );
-
-        pokemon.Defense = Math.Max(4, defenseBase / 2 + level);
-        pokemon.SpecialAttack = Math.Max(4, specialAttackBase / 2 + level);
-        pokemon.SpecialDefense = Math.Max(4, specialDefenseBase / 2 + level);
-        pokemon.Speed = Math.Max(4, speedBase / 2 + level);
-
-        var encounters = PokeApiClient.GetPokemonEncountersAsync(randomId.ToString()).GetAwaiter().GetResult();
-        pokemon.EncounterLocation = encounters.Count > 0
-            ? PokeApiMapper.ToDisplayName(encounters[0].LocationArea.Name)
-            : "Inconnu";
 
         AddApiMoves(apiPokemon, pokemon);
 
@@ -141,12 +125,6 @@ public static class WildPokemonData
         }
 
         return pokemon;
-    }
-
-    private static int GetStat(PokeApiPokemon pokemon, string statName, int fallback)
-    {
-        PokeApiPokemonStatEntry? stat = pokemon.Stats.FirstOrDefault(s => s.Stat.Name == statName);
-        return stat?.BaseStat ?? fallback;
     }
 
     private static void AddApiMoves(PokeApiPokemon apiPokemon, Pokemon pokemon)
@@ -206,7 +184,6 @@ public static class WildPokemonData
             basePokemon.Type1,
             basePokemon.Type2
         );
-        generated.EncounterLocation = zoneName;
 
         generated.LearnMove(new AttackLogic("Charge", "Normal", "Physique", 40, 100));
         generated.LearnMove(new AttackLogic("Morsure", "Ténèbres", "Physique", 60, 100));

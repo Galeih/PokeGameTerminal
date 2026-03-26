@@ -14,7 +14,7 @@ Un jeu Pokémon en ligne de commande développé en C# avec un gameplay interact
 
 - **Shop interactif** : Boutique complète proposant divers objets essentiels comme des potions, des Pokéballs et des objets de soin. Gérez votre argent et vos ressources stratégiquement.
 
-- **Données dynamiques via PokeAPI** : Génération de Pokémon sauvages, attaques, statistiques de base et lieux de rencontre depuis l'API officielle avec cache local et fallback hors-ligne.
+- **Données dynamiques via PokeAPI** : Génération de Pokémon sauvages et d'attaques depuis l'API officielle avec cache local et fallback hors-ligne.
 
 - **Interface stylisée** : Expérience utilisateur immersive grâce à Spectre.Console, offrant des menus colorés, des animations et des éléments visuels attrayants dans la console.
 
